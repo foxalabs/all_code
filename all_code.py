@@ -6,18 +6,8 @@ FULL_CODE_FILE_NAME = "full_code.txt"
 FILES_TO_INCLUDE = {} # if empty, include all files
 
 # FILES_TO_INCLUDE = {
-#     'api_service/chat/__init__.py',
-#     'api_service/chat/chat_endpoint.py',
-#     'api_service/chat/static/chat.js',
-#     'api_service/chat/static/chat.css',
-#     'api_service/chat/templates/chat.html',
-#     'api_service/models.py',
-#     'api_service/main_api.py',
-#     'api_service/auth/auth.py',
-#     'api_service/auth/id_token_auth.py',
-#     'api_service/utils/logger.py',
-#     'shared/document_extractor.py',
-#     'shared/search.py',
+#     'some_file.py',
+#     'another_file.js',
 # }
 
 # Define programming-related file extensions (removed '.json' and '.md')
@@ -28,7 +18,17 @@ PROGRAMMING_EXTENSIONS = {
 }
 
 # Define directories to exclude during file aggregation and directory tree generation
-EXCLUDE_DIRS = {'venv', 'node_modules', '__pycache__', '.git', 'dist', 'build', 'sharepoint_files', 'temp', 'old_files', 'old_old_files', 'flask_session'}
+EXCLUDE_DIRS = {
+        'venv', 
+        'node_modules', 
+        '__pycache__', 
+        '.git', 
+        'dist', 
+        'build',  
+        'temp', 
+        'old_files', 
+        'flask_session'
+}
 
 # Define the name of this script to exclude it
 SCRIPT_NAME = os.path.basename(__file__)
