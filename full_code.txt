@@ -1,3 +1,25 @@
+Directory Tree:
+all_code/
+│   ├── README.md
+│   ├── pyproject.toml
+│   ├── uv.lock
+│   ├── full_code.txt
+│   ├── .gitignore
+│   ├── .git/ [EXCLUDED]
+│   ├── .venv/ [EXCLUDED]
+│   ├── src/
+│   │   ├── all_code/
+│   │   │   ├── cli.py
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__/ [EXCLUDED]
+
+
+
+
+# ======================
+# File: src/all_code/cli.py
+# ======================
+
 # Copyright 2024 Spencer Bentley
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), 
@@ -32,14 +54,15 @@ PROGRAMMING_EXTENSIONS = {
 
 # Define directories to exclude during file aggregation and directory tree generation
 EXCLUDE_DIRS = {
-        'venv', 
-        'node_modules', 
-        '__pycache__', 
-        '.git', 
-        'dist', 
-        'build',  
-        'temp', 
-        'old_files', 
+        'venv',
+        '.venv',
+        'node_modules',
+        '__pycache__',
+        '.git',
+        'dist',
+        'build',
+        'temp',
+        'old_files',
         'flask_session'
 }
 
@@ -47,7 +70,8 @@ EXCLUDE_DIRS = {
 SCRIPT_NAME = os.path.basename(__file__)
 
 # Define files to exclude from both aggregation and directory tree
-EXCLUDE_FILES = {SCRIPT_NAME, 'package-lock.json', 'package.json', 'temp.py'}
+# Add SCRIPT_NAME to exclude this file.
+EXCLUDE_FILES = {'package-lock.json', 'package.json', 'temp.py'}
 
 def generate_directory_tree(startpath):
 
@@ -71,13 +95,13 @@ def generate_directory_tree(startpath):
 
         # Add the current directory to the tree
         current_dir = os.path.basename(root) if rel_path else os.path.basename(startpath.rstrip(os.sep)) or startpath
-        
+
         # Check if the current directory is excluded
         if current_dir in EXCLUDE_DIRS:
             tree += f"{indent}{current_dir}/ [EXCLUDED]\n"
             dirs[:] = []  # Prevent os.walk from traversing further
             continue
-        
+
         tree += f"{indent}{current_dir}/\n"
 
         # List files, excluding the script itself and any in EXCLUDE_FILES
@@ -89,7 +113,7 @@ def generate_directory_tree(startpath):
     return tree
 
 def is_programming_file(filename):
-    
+
     # Checks if the file has a programming-related extension.
     _, ext = os.path.splitext(filename)
     return ext.lower() in PROGRAMMING_EXTENSIONS
@@ -98,7 +122,7 @@ def should_exclude(path):
     # Determines if a file should be excluded based on its path.
     # - Excludes files in EXCLUDE_DIRS and their subdirectories.
     # - Excludes files listed in EXCLUDE_FILES.
-    
+
     # Normalize path separators
     normalized_path = os.path.normpath(path)
     parts = normalized_path.split(os.sep)
@@ -115,16 +139,16 @@ def should_exclude(path):
     return False
 
 def should_include_file(file_path):
-    
+
     # Determines if a file should be included based on FILES_TO_INCLUDE.
     # If FILES_TO_INCLUDE is empty, include all files.
-    
+
     if not FILES_TO_INCLUDE:
         return True  # Include all files if the list is empty
     rel_file_path = os.path.relpath(file_path)
     return rel_file_path in FILES_TO_INCLUDE
 
-def main():
+def cli():
     startpath = os.getcwd()
 
     # Generate directory tree
@@ -183,5 +207,8 @@ def main():
 
     print(f"Full code file '{FULL_CODE_FILE_NAME}' has been created successfully.")
 
-if __name__ == "__main__":
-    main()
+
+# ======================
+# File: src/all_code/__init__.py
+# ======================
+

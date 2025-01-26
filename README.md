@@ -13,6 +13,29 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 ## Setup
 
 1. **Clone the Repository**
+```
+git clone https://github.com/foxalabs/all_code.git
+```
+2. **Install it locally**
+```
+# Create a virtual environment
+python3 -m venv venv
+# Activate the virtual environment
+source venv/bin/activate
+# Install the package
+pip install -e ./all_code
+```
+3. **Use it in your project**
+```
+# Activate the virtual environment
+source venv/bin/activate
+# Enter the desired folder
+cd my/project/folder
+# Run the CLI command to generate the Aggregated code.
+all-code
+# Shell output:
+# Full code file 'full_code.txt' has been created successfully.
+```
 
 ## Exclusions
 
@@ -23,6 +46,7 @@ The **All Code Aggregator** script automatically excludes specific directories a
 The following directories are excluded by default:
 
 - `venv`
+- `.venv`
 - `node_modules`
 - `__pycache__`
 - `.git`

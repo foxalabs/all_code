@@ -1,0 +1,17 @@
+[project]
+name = "all-code"
+version = "0.1.0"
+description = "All Code Aggregator"
+readme = "README.md"
+authors = [
+    { name = "Spencer Bentley", email = "" }
+]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+all-code = "all_code.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
