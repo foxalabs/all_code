@@ -1,16 +1,18 @@
 [project]
 name = "all-code"
-version = "0.1.0"
+version = "0.2.0"
 description = "All Code Aggregator"
 readme = "README.md"
 authors = [
     { name = "Spencer Bentley", email = "" }
 ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "typer>=0.15.1",
+]
 
 [project.scripts]
-all-code = "all_code.cli:cli"
+all-code = "all_code.cli:app"
 
 [build-system]
 requires = ["hatchling"]

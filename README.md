@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **All Code Aggregator** script consolidates all programming-related code files in the current directory into a single `full_code.txt` file. This is especially useful for providing your entire codebase to AI models for analysis or assistance.
+The **All Code Aggregator** script consolidates all programming-related code files in the current directory into a single `full_code.txt` file. This is especially useful for providing your entire codebase to AI models for analysis or assistance, because sometimes you just want to copy paste code back and forth from whatever IDE to whatever LLM frontend, but you just have too many files for it to be practical.
 
 ## Features
 
@@ -23,7 +23,7 @@ Use the one line standalone installer from uv's [docs page](https://docs.astral.
 2. **Install All Code Aggregator CLI from github source**
 
 ```
-uv tool install git+https://github.com/hermesribeiro/all_code@0.1.0
+uv tool install git+https://github.com/hermesribeiro/all_code@0.2.0
 ```
 
 3. **Use it in your project**
@@ -48,7 +48,7 @@ python3 -m venv venv
 # Activate the virtual environment
 source venv/bin/activate
 # Install the package
-pip install git+https://github.com/hermesribeiro/all_code@0.1.0
+pip install git+https://github.com/hermesribeiro/all_code@0.2.0
 ```
 
 2. **Use it in your project**
@@ -58,6 +58,31 @@ pip install git+https://github.com/hermesribeiro/all_code@0.1.0
 all-code
 # Shell output:
 # Full code file 'full_code.txt' has been created successfully.
+```
+
+## File creation options
+
+Find a list of all available options to customize the output file with the command below. This is useful for specifying only a few files  or to exclude specific directories from the final text to be used in a prompt.
+
+
+```
+all-code --help
+
+ Usage: all-code [OPTIONS]
+
+ Generate a master file containing the directory tree and contents of specified programming files.
+
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --output-file         -o      TEXT  Name of the master file to create. [default: full_code.txt]                                                                                   │
+│ --include-files       -i      TEXT  Comma-separated list of specific files to include. If not provided, all files are included. [default: None]                                   │
+│ --extensions          -x      TEXT  Comma-separated list of programming file extensions to include. Default '.py, .rs, .html, .pl, .json, .css, .c, .yaml, .ts, .yml, .sql, .cpp, │
+│                                     .scala, .xml, .lua, .php, .kt, .swift, .sh, .java, .rb, .js, .go'.                                                                            │
+│ --exclude-dirs        -e      TEXT  Comma-separated list of directories to join the default exclude dirs list 'node_modules, __pycache__, .venv, dist, build, venv, .git'         │
+│ --install-completion                Install completion for the current shell.                                                                                                     │
+│ --show-completion                   Show completion for the current shell, to copy it or customize the installation.                                                              │
+│ --help                              Show this message and exit.                                                                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
 ```
 
 ## Exclusions

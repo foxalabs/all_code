@@ -12,8 +12,14 @@
 # IN THE SOFTWARE.
 
 import os
-from typing import Set, Optional
 from dataclasses import dataclass
+from typing import Set
+
+import typer
+from typing_extensions import Annotated
+
+# Initialize Typer app
+app = typer.Typer()
 
 # Define the master file name
 FULL_CODE_FILE_NAME: str = "full_code.txt"
@@ -56,13 +62,10 @@ EXCLUDE_DIRS: Set[str] = {
     ".git",
     "dist",
     "build",
-    "temp",
-    "old_files",
-    "flask_session",
 }
 
 # Define files to exclude from both aggregation and directory tree
-EXCLUDE_FILES: Set[str] = {"package-lock.json", "package.json", "temp.py"}
+EXCLUDE_FILES: Set[str] = {"package-lock.json", "package.json"}
 
 
 @dataclass
@@ -186,39 +189,73 @@ def should_include_file(file_path: str, config: Config) -> bool:
     return rel_file_path in config.files_to_include
 
 
-def cli(
-    full_code_file_name: Optional[str] = FULL_CODE_FILE_NAME,
-    files_to_include: Optional[Set[str]] = None,
-    programming_extensions: Optional[Set[str]] = None,
-    exclude_dirs: Optional[Set[str]] = None,
-) -> None:
+@app.command()
+def generate_full_code(
+    full_code_file_name: Annotated[
+        str,
+        typer.Option(
+            "--output-file",
+            "-o",
+            help="Name of the master file to create.",
+            show_default=True,
+        ),
+    ] = FULL_CODE_FILE_NAME,
+    files_to_include: Annotated[
+        str,
+        typer.Option(
+            "--include-files",
+            "-i",
+            help="Comma-separated list of specific files to include. If not provided, all files are included.",
+        ),
+    ] = None,
+    programming_extensions: Annotated[
+        str,
+        typer.Option(
+            "--extensions",
+            "-x",
+            help=f"Comma-separated list of programming file extensions to include. Default '{', '.join(PROGRAMMING_EXTENSIONS)}'.",
+            show_default=False,
+        ),
+    ] = None,
+    exclude_dirs: Annotated[
+        str,
+        typer.Option(
+            "--exclude-dirs",
+            "-e",
+            help=f"Comma-separated list of directories to join the default exclude dirs list '{', '.join(EXCLUDE_DIRS)}'",
+            show_default=False,
+        ),
+    ] = None,
+):
     """
-    Command-line interface function to generate a master file containing the directory tree
-    and contents of specified programming files.
+    Generate a master file containing the directory tree and contents of specified programming files.
+    """
+    # Process comma-separated input strings into sets
+    if files_to_include:
+        files_to_include_set = set(map(str.strip, files_to_include.split(",")))
+    else:
+        files_to_include_set = FILES_TO_INCLUDE
 
-    Args:
-        full_code_file_name (str, optional): Name of the master file to create. Defaults to FULL_CODE_FILE_NAME.
-        files_to_include (Set[str], optional): Specific files to include. If None, include all. Defaults to None.
-        programming_extensions (Set[str], optional): Set of programming file extensions. Defaults to PROGRAMMING_EXTENSIONS.
-        exclude_dirs (Set[str], optional): Directories to exclude. Defaults to EXCLUDE_DIRS.
-    """
-    # Initialize default values if None are provided
-    files_to_include = (
-        files_to_include if files_to_include is not None else FILES_TO_INCLUDE
-    )
-    programming_extensions = (
-        programming_extensions
-        if programming_extensions is not None
-        else PROGRAMMING_EXTENSIONS
-    )
-    exclude_dirs = exclude_dirs if exclude_dirs is not None else EXCLUDE_DIRS
+    if programming_extensions:
+        programming_extensions_set = set(
+            map(str.strip, programming_extensions.split(","))
+        )
+    else:
+        programming_extensions_set = PROGRAMMING_EXTENSIONS
+
+    if exclude_dirs:
+        exclude_dirs_set = EXCLUDE_DIRS.union(
+            set(map(str.strip, exclude_dirs.split(",")))
+        )
+    else:
+        exclude_dirs_set = EXCLUDE_DIRS
 
     # Create a Config instance
     config = Config(
         full_code_file_name=full_code_file_name,
-        files_to_include=files_to_include,
-        programming_extensions=programming_extensions,
-        exclude_dirs=exclude_dirs,
+        files_to_include=files_to_include_set,
+        programming_extensions=programming_extensions_set,
+        exclude_dirs=exclude_dirs_set,
     )
 
     startpath = os.getcwd()
@@ -288,9 +325,17 @@ def cli(
                         )
                         master_file.write(error_msg)
 
-        print(
-            f"Full code file '{config.full_code_file_name}' has been created successfully."
+        typer.echo(
+            typer.style(
+                f"Full code file '{config.full_code_file_name}' has been created successfully.",
+                fg=typer.colors.GREEN,
+            )
         )
 
     except Exception as e:
-        print(f"An error occurred while creating the full code file: {e}")
+        typer.echo(
+            typer.style(
+                f"An error occurred while creating the full code file: {e}",
+                fg=typer.colors.RED,
+            )
+        )
