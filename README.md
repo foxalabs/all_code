@@ -100,9 +100,6 @@ The following directories are excluded by default:
 - `.git`
 - `dist`
 - `build`
-- `temp`
-- `old_files`
-- `flask_session`
 
 **Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
 
