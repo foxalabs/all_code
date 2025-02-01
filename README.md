@@ -14,6 +14,27 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 
 1. **Clone the Repository**
 
+## Usage
+**Basic usage**
+```bash
+python aggregate_code.py
+```
+
+**Specify a Directory**
+```bash
+python aggregate_code.py -d /path/to/start/directory
+```
+
+**Copy Aggregated Content to Clipboard Instead of Writing to File**
+```bash
+python aggregate_code.py -c
+```
+
+**Combine Both Arguments: Specify Directory and Copy to Clipboard**
+```bash
+python aggregate_code.py -d /path/to/start/directory -c
+```
+
 ## Exclusions
 
 The **All Code Aggregator** script automatically excludes specific directories and files to streamline the aggregation process and avoid including unnecessary or sensitive information.

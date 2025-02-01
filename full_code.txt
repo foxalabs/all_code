@@ -1,0 +1,1111 @@
+Directory Tree:
+clay/
+│   ├── .DS_Store
+│   ├── Makefile
+│   ├── .devcontainer
+│   ├── README.md
+│   ├── .gitignore
+│   ├── .env
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   ├── entrypoint.sh
+│   ├── docker/
+│   │   ├── Dockerfile
+│   ├── tests/
+│   │   ├── test_persistence.py
+│   │   ├── test_ingestion.py
+│   │   ├── test_transformation.py
+│   ├── db/
+│   │   ├── init.sql/
+│   ├── .git/ [EXCLUDED]
+│   ├── .vscode/
+│   │   ├── settings.json
+│   ├── src/
+│   │   ├── .DS_Store
+│   │   ├── requirements.txt
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   ├── ingestion/
+│   │   │   ├── ingestion_agent.py
+│   │   │   ├── web_scraper.py
+│   │   │   ├── __init__.py
+│   │   │   ├── snowflake_ingestion.py
+│   │   │   ├── local_ingestion.py
+│   │   ├── config/
+│   │   │   ├── __init__.py
+│   │   │   ├── settings.py
+│   │   │   ├── db_init.py
+│   │   │   ├── db_base.py
+│   │   ├── transformation/
+│   │   │   ├── schema_definitions.py
+│   │   │   ├── transformations.py
+│   │   │   ├── __init__.py
+│   │   │   ├── transform_agent.py
+│   │   ├── persistence/
+│   │   │   ├── __init__.py
+│   │   │   ├── data_lake.py
+│   │   │   ├── postgres_writer.py
+│   │   │   ├── application/
+│   │   │   │   ├── __init__.py
+│   │   │   ├── infrastructure/
+│   │   │   │   ├── __init__.py
+│   │   │   ├── domain/
+│   │   │   │   ├── measure.py
+│   │   │   │   ├── dataentry.py
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── dataset.py
+│   │   │   │   ├── record.py
+│   │   │   │   ├── source.py
+│   │   │   │   ├── dimension.py
+│   │   │   │   ├── timedimension.py
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── main.py
+
+
+
+
+# ======================
+# File: docker-compose.yml
+# ======================
+
+services:
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # Optional initialization
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: clay
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - app-network
+    volumes:
+      - ./src:/code/src
+      - ./entrypoint.sh:/code/entrypoint.sh
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
+
+
+# ======================
+# File: entrypoint.sh
+# ======================
+
+#!/bin/sh
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Function to check if PostgreSQL is up
+wait_for_postgres() {
+  echo "Waiting for PostgreSQL to be available..."
+  while ! nc -z db 5432; do
+    sleep 0.1
+  done
+  echo "PostgreSQL is up!"
+}
+
+# Set PYTHONPATH to include /code
+export PYTHONPATH=/code/src
+
+# Wait for PostgreSQL
+wait_for_postgres
+
+# Initialize the database (if needed)
+echo "Initializing the database..."
+python -m src.config.db_init
+
+# Start the main application
+echo "Starting the application..."
+exec "$@"
+
+
+# ======================
+# File: tests/test_persistence.py
+# ======================
+
+"""
+Tests for persistence components.
+"""
+
+def test_persistence():
+    assert True, "Placeholder test for persistence."
+
+
+
+# ======================
+# File: tests/test_ingestion.py
+# ======================
+
+"""
+Tests for ingestion components.
+"""
+
+def test_ingestion():
+    assert True, "Placeholder test for ingestion."
+
+
+
+# ======================
+# File: tests/test_transformation.py
+# ======================
+
+"""
+Tests for transformation components.
+"""
+
+def test_transformation():
+    assert True, "Placeholder test for transformation."
+
+
+
+# ======================
+# File: src/__init__.py
+# ======================
+
+# src/__init__.py
+# Initialization for the src package.
+
+
+
+# ======================
+# File: src/app.py
+# ======================
+
+# ======================
+# File: src/app.py
+# ======================
+import time
+from api.main import init_api
+# ADDED:
+from ingestion.ingestion_agent import run_ingestion  # CHANGED (new import)
+
+def main():
+    print("Welcome to Clay: Capture, Load, Analyze, and Yield!")
+    print("Clay is now running. Press Ctrl+C to stop.")
+    init_api()
+
+    # ADDED (Demo usage - optional):
+    # If you want a quick demonstration of ingestion from a URL,
+    # you can uncomment these lines or handle it differently:
+    #
+    # url_to_scrape = "https://example.com/some-page-with-csv"
+    # run_ingestion(url_to_scrape)
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nShutting down Clay...")
+
+
+if __name__ == '__main__':
+    main()
+
+
+# ======================
+# File: src/ingestion/ingestion_agent.py
+# ======================
+
+import os
+import requests
+import pandas as pd
+from pathlib import Path
+from typing import List, Dict
+from config.db_base import SessionLocal
+from sqlalchemy.orm import Session
+
+# Domain imports
+from persistence.domain.source import Source
+from persistence.domain.dataset import DataSet
+from persistence.domain.measure import Measure
+from persistence.domain.dimension import Dimension
+from persistence.domain.timedimension import TimeDimension
+from persistence.domain.record import Record
+from persistence.domain.dataentry import DataEntry
+
+# We'll import from web_scraper for scraping logic
+from .web_scraper import find_tabular_files
+
+# ADDED (for local file reading)
+from .local_ingestion import read_tabular_file  # CHANGED (function we’ll define here or in local_ingestion)
+
+def prompt_user_selection(file_links: List[str]) -> List[str]:
+    """
+    # ADDED (new function)
+    Presents the user with a list of discovered files and asks which ones to ingest.
+    Returns a list of the user-selected files.
+    """
+    if not file_links:
+        print("No tabular files found.")
+        return []
+
+    print("The following files were found:")
+    for i, link in enumerate(file_links, start=1):
+        print(f"{i}. {link}")
+
+    selection = input("Enter the file numbers you want to ingest (comma-separated): ")
+    if not selection.strip():
+        return []
+    selected_indices = [int(x.strip()) for x in selection.split(",") if x.strip().isdigit()]
+
+    selected_files = [file_links[i-1] for i in selected_indices if 0 < i <= len(file_links)]
+    return selected_files
+
+
+def download_file(url: str, download_path: str) -> str:
+    """
+    # ADDED (new function)
+    Downloads the file from `url` to `download_path`, returns the local file path.
+    """
+    local_filename = os.path.join(download_path, os.path.basename(url))
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename
+
+
+def infer_schema(df: pd.DataFrame) -> Dict[str, str]:
+    """
+    # ADDED (new function)
+    Infer whether each column is a measure (numeric),
+    dimension (string/categorical), or time dimension (date-like).
+    Returns a dict of {column_name: "measure"|"dimension"|"time"}
+    """
+    inferred = {}
+    for col in df.columns:
+        # Simple heuristic approach
+        # Try to see if all non-NA values can parse as float => measure
+        # Or parse as date => time
+        # else => dimension
+        col_data = df[col].dropna()
+        if col_data.empty:
+            # default to dimension if no data
+            inferred[col] = "dimension"
+            continue
+
+        # Check date parse
+        try:
+            pd.to_datetime(col_data, infer_datetime_format=True)
+            # If no error => it's a time dimension
+            inferred[col] = "time"
+            continue
+        except:
+            pass
+
+        # Check numeric parse
+        try:
+            col_data.astype(float)
+            # If no error => measure
+            inferred[col] = "measure"
+            continue
+        except:
+            pass
+
+        # Otherwise dimension
+        inferred[col] = "dimension"
+
+    return inferred
+
+
+def process_dataframe_for_standard_model(
+    df: pd.DataFrame,
+    inferred_schema: Dict[str, str],
+    source_name: str
+):
+    """
+    # ADDED (new function)
+    1. Create or retrieve a Source row for source_name.
+    2. Create a new DataSet referencing that Source.
+    3. Create Measure/Dimension/TimeDimension rows for each column.
+    4. For each row, create a Record + DataEntry linking the correct measure/dim/dates.
+    """
+    session: Session = SessionLocal()
+
+    try:
+        # 1. Get or create Source
+        source = session.query(Source).filter(Source.name == source_name).first()
+        if not source:
+            source = Source(name=source_name, description=f"Ingested from {source_name}")
+            session.add(source)
+            session.commit()
+
+        # 2. Create new DataSet
+        dataset = DataSet(source_id=source.id, query={})
+        session.add(dataset)
+        session.commit()
+
+        # 3. Create measure/dimension/time records
+        measure_dict = {}
+        dimension_dict = {}
+        time_dimension_dict = {}
+
+        for col_name, col_role in inferred_schema.items():
+            if col_role == "measure":
+                m = Measure(dataset_id=dataset.id, name=col_name)
+                session.add(m)
+                session.flush()  # get id
+                measure_dict[col_name] = m
+            elif col_role == "dimension":
+                d = Dimension(dataset_id=dataset.id, name=col_name)
+                session.add(d)
+                session.flush()
+                dimension_dict[col_name] = d
+            elif col_role == "time":
+                t = TimeDimension(dataset_id=dataset.id, name=col_name)
+                session.add(t)
+                session.flush()
+                time_dimension_dict[col_name] = t
+
+        session.commit()
+
+        # 4. For each row in the DataFrame
+        for idx, row in df.iterrows():
+            record = Record(dataset_id=dataset.id)
+            session.add(record)
+            session.flush()  # get record.id
+
+            for col_name, value in row.items():
+                if pd.isna(value):
+                    continue
+
+                if col_name in measure_dict:
+                    data_entry = DataEntry(
+                        record_id=record.id,
+                        measure_id=measure_dict[col_name].id,
+                        value=str(value)
+                    )
+                elif col_name in dimension_dict:
+                    data_entry = DataEntry(
+                        record_id=record.id,
+                        dimension_id=dimension_dict[col_name].id,
+                        value=str(value)
+                    )
+                elif col_name in time_dimension_dict:
+                    data_entry = DataEntry(
+                        record_id=record.id,
+                        time_dimension_id=time_dimension_dict[col_name].id,
+                        value=str(value)
+                    )
+                else:
+                    # If it's unclassified for some reason
+                    continue
+
+                session.add(data_entry)
+
+            session.commit()
+
+        print(f"Ingested DataFrame into Source(ID={source.id}), DataSet(ID={dataset.id}).")
+    except Exception as e:
+        session.rollback()
+        print(f"Error during ingestion: {e}")
+    finally:
+        session.close()
+
+
+def run_ingestion(url: str):
+    """
+    # CHANGED (entire function)
+    Main function to coordinate ingestion from a webpage containing CSV/Excel files.
+    """
+    # 1. Find tabular files on the page
+    results = find_tabular_files(url, file_types=[".csv",".xlsx",".xls",".tsv"])
+    file_links = results.get("file_links", [])
+
+    # 2. Prompt user
+    selected_files = prompt_user_selection(file_links)
+    if not selected_files:
+        print("No files selected. Exiting.")
+        return
+
+    # 3. Download & read each file, then store
+    download_dir = Path("./data_lake")
+    download_dir.mkdir(exist_ok=True)
+
+    for link in selected_files:
+        local_path = download_file(link, str(download_dir))
+        df = read_tabular_file(local_path)  # read into DataFrame
+        column_roles = infer_schema(df)
+        process_dataframe_for_standard_model(df, column_roles, source_name=url)
+
+    print("Ingestion complete!")
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) != 2:
+        print("Usage: python ingestion_agent.py <url>")
+        sys.exit(1)
+
+    url_to_scrape = sys.argv[1]
+    run_ingestion(url_to_scrape)
+
+# ======================
+# File: src/ingestion/web_scraper.py
+# ======================
+
+import argparse
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from urllib.parse import urljoin
+
+
+def find_tabular_files(url, file_types=None):
+    """
+    # CHANGED: Renamed from find_downloadable_files to find_tabular_files;
+    # extended to handle .tsv if you want, plus any other logic you like.
+    Searches a webpage for links to downloadable files that match typical tabular extensions.
+
+    :param url: The website URL to scrape.
+    :param file_types: A list of file extensions (e.g., ['.csv', '.xlsx']).
+    :return: A dict with "file_links" and optionally "html_tables".
+    """
+
+    # Default file extensions if none are provided
+    if file_types is None:
+        file_types = ['.pdf', '.csv', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx',
+                      '.zip', '.tar', '.gz', '.rar']
+
+    chrome_options = Options()
+    chrome_options.binary_location = "/usr/bin/chromium"
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920x1080")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    # CHANGED: Use a fixed path to chromedriver (instead of ChromeDriverManager)
+    service = Service("/usr/bin/chromedriver")
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    try:
+        print(f"Loading page: {url}")
+        driver.get(url)
+
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "a")))
+
+        links = driver.find_elements(By.TAG_NAME, "a")
+
+        file_links = []
+        for link in links:
+            href = link.get_attribute("href")
+            if href and any(href.lower().endswith(ext) for ext in file_types):
+                absolute_url = urljoin(url, href)
+                file_links.append(absolute_url)
+
+        return {
+            "file_links": file_links,
+        }
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"file_links": []}
+    finally:
+        driver.quit()
+
+
+def main():
+    """
+    Command-line interface for scraping downloadable files from a website.
+    """
+    parser = argparse.ArgumentParser(description="Find downloadable files on a website.")
+    parser.add_argument("url", type=str, help="Website URL to scrape")
+    parser.add_argument(
+        "--file-types",
+        type=str,
+        default=".pdf,.csv,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.zip,.tar,.gz,.rar",
+        help="Comma-separated list of file extensions to filter (e.g., .pdf,.csv)"
+    )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=True,
+        help="Run in headless mode (default: True)"
+    )
+
+    args = parser.parse_args()
+    file_types = args.file_types.split(",")
+
+    result = find_tabular_files(args.url, file_types)
+
+    files = result.get("file_links", [])
+    if files:
+        print("\nDownloadable files found:")
+        for file in files:
+            print(file)
+    else:
+        print("\nNo downloadable files found.")
+
+
+if __name__ == "__main__":
+    main()
+
+
+# ======================
+# File: src/ingestion/__init__.py
+# ======================
+
+# src/ingestion/__init__.py
+# Initialization for ingestion module.
+
+
+
+# ======================
+# File: src/ingestion/snowflake_ingestion.py
+# ======================
+
+"""
+Logic for connecting to Snowflake tables/views and fetching data.
+"""
+
+def ingest_from_snowflake(table_name: str):
+    """
+    Query a Snowflake table/view and return data as a DataFrame.
+    """
+    pass
+
+
+
+# ======================
+# File: src/ingestion/local_ingestion.py
+# ======================
+
+# ======================
+# File: src/ingestion/local_ingestion.py
+# ======================
+"""
+Logic for reading files from a local directory or local paths.
+"""
+
+import os
+import pandas as pd
+
+def ingest_from_local(directory_path: str):
+    """
+    # No changes from the earlier placeholder if you want to keep a scanning approach.
+    # Could be used to find local CSV/XLS files, read them, and pass to processing.
+    """
+    pass
+
+def read_tabular_file(local_file_path: str) -> pd.DataFrame:
+    """
+    # ADDED (new function) - used by ingestion_agent
+    Reads CSV or Excel from a local path into a DataFrame.
+    Auto-detect extension and read accordingly.
+    """
+    ext = os.path.splitext(local_file_path)[1].lower()
+    if ext in [".csv", ".txt", ".tsv"]:
+        df = pd.read_csv(local_file_path)
+    elif ext in [".xls", ".xlsx"]:
+        df = pd.read_excel(local_file_path)
+    else:
+        raise ValueError(f"Unrecognized file extension: {ext}")
+    return df
+
+
+# ======================
+# File: src/config/__init__.py
+# ======================
+
+
+
+# ======================
+# File: src/config/settings.py
+# ======================
+
+"""
+Global settings, environment variables, logging configurations, etc.
+"""
+
+import os
+
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'YOUR_DEFAULT_API_KEY')
+SNOWFLAKE_USER = os.environ.get('SNOWFLAKE_USER', '...')
+# Add more environment-based settings as needed.
+
+
+
+# ======================
+# File: src/config/db_init.py
+# ======================
+
+import logging
+from sqlalchemy import create_engine, text
+import os
+from config.db_base import Base, engine  # updated import statement
+
+# Import all models to ensure they are registered with Base
+from persistence.domain.dataentry import DataEntry
+from persistence.domain.dataset import DataSet
+from persistence.domain.dimension import Dimension
+from persistence.domain.measure import Measure
+from persistence.domain.record import Record
+from persistence.domain.source import Source
+from persistence.domain.timedimension import TimeDimension
+
+# Enable SQLAlchemy logging
+logging.basicConfig()
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable not set")
+
+
+def ensure_database_exists():
+    """Check if the database exists and create it if not."""
+    db_name = os.getenv("POSTGRES_DB")
+    postgres_user = os.getenv("POSTGRES_USER")
+    postgres_password = os.getenv("POSTGRES_PASSWORD")
+    postgres_host = "db"  # Use Docker service name as the hostname
+    postgres_port = "5432"
+
+    # Base URL to connect to the `postgres` system database
+    base_url = (
+        f"postgresql://{postgres_user}:{postgres_password}@"
+        f"{postgres_host}:{postgres_port}/postgres"
+    )
+
+    # Connect to the system database
+    temp_engine = create_engine(base_url, isolation_level="AUTOCOMMIT")
+
+    print(f"Checking if database '{db_name}' exists...")
+    with temp_engine.connect() as conn:
+        # Query to check if the database exists
+        result = conn.execute(
+            text("SELECT 1 FROM pg_database WHERE datname = :db_name"),
+            {"db_name": db_name}
+        ).scalar()
+
+        # Create the database if it does not exist
+        if not result:
+            print(f"Database '{db_name}' does not exist. Creating...")
+            conn.execute(text(f"CREATE DATABASE {db_name}"))
+            print(f"Database '{db_name}' created successfully.")
+        else:
+            print(f"Database '{db_name}' already exists.")
+
+
+ensure_database_exists()
+
+
+def init_db():
+    print("Creating database tables...")
+
+    # Debugging: Print the tables in Base.metadata
+    print("Tables in Base.metadata:")
+    for table_name in Base.metadata.tables.keys():
+        print(table_name)
+
+    # Create all tables defined in the Base's metadata
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully.")
+
+
+if __name__ == "__main__":
+    init_db()
+
+
+# ======================
+# File: src/config/db_base.py
+# ======================
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable not set")
+
+engine = create_engine(DATABASE_URL, echo=True)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+# ======================
+# File: src/transformation/schema_definitions.py
+# ======================
+
+"""
+Common schema definitions for standardizing data fields.
+"""
+
+COMMON_SCHEMA = {
+    # Example: 'full_name': 'string', 'city': 'string', etc.
+}
+
+
+
+# ======================
+# File: src/transformation/transformations.py
+# ======================
+
+"""
+Custom transformation utility functions (e.g., date parsing, column renaming).
+"""
+
+def unify_schema(df, target_schema):
+    """
+    Apply transformations to match df columns to a target schema.
+    """
+    pass
+
+
+
+# ======================
+# File: src/transformation/__init__.py
+# ======================
+
+# src/transformation/__init__.py
+# Initialization for transformation module.
+
+
+
+# ======================
+# File: src/transformation/transform_agent.py
+# ======================
+
+"""
+LangChain agent for schema normalization and data transformation.
+"""
+
+def run_transform(df):
+    """
+    Analyze a DataFrame, create or apply transformations
+    to fit a common schema.
+    """
+    pass
+
+
+
+# ======================
+# File: src/persistence/__init__.py
+# ======================
+
+# src/persistence/__init__.py
+# Initialization for persistence module.
+
+
+
+# ======================
+# File: src/persistence/data_lake.py
+# ======================
+
+"""
+Utilities for storing data locally in a 'data lake' format (e.g. Parquet).
+"""
+
+def save_as_parquet(df, path):
+    """
+    Save the given DataFrame as a Parquet file at the specified path.
+    """
+    pass
+
+
+
+# ======================
+# File: src/persistence/postgres_writer.py
+# ======================
+
+"""
+Functions for writing DataFrames to a Docker-hosted Postgres database.
+"""
+
+def write_to_postgres(df, db_code, table_name):
+    """
+    Write the DataFrame to a Postgres table. The 'db_code' can identify
+    which database or schema to target.
+    """
+    pass
+
+
+
+# ======================
+# File: src/persistence/application/__init__.py
+# ======================
+
+
+
+# ======================
+# File: src/persistence/infrastructure/__init__.py
+# ======================
+
+
+
+# ======================
+# File: src/persistence/domain/measure.py
+# ======================
+
+from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from config.db_base import Base
+from .dataset import DataSet 
+
+class Measure(Base):
+    __tablename__ = 'measures'
+
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
+    name = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=True)
+    short_title = Column(String(100), nullable=True)
+    description = Column(Text, nullable=True)
+    type = Column(String(100), nullable=True)
+
+    dataset = relationship("DataSet", back_populates="measures")
+    data_entries = relationship("DataEntry", back_populates="measure")
+
+    def __repr__(self):
+        return f"<Measure(id={self.id}, name='{self.name}', dataset_id={self.dataset_id})>"
+
+
+# ======================
+# File: src/persistence/domain/dataentry.py
+# ======================
+
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from config.db_base import Base  # Import Base from db_base
+from .dataset import DataSet  # Ensure DataSet is imported
+
+
+class DataEntry(Base):
+    __tablename__ = 'data_entries'
+
+    id = Column(Integer, primary_key=True, index=True)
+    record_id = Column(Integer, ForeignKey('records.id'), nullable=False)
+    measure_id = Column(Integer, ForeignKey('measures.id'), nullable=True)
+    dimension_id = Column(Integer, ForeignKey('dimensions.id'), nullable=True)
+    time_dimension_id = Column(Integer, ForeignKey(
+        'time_dimensions.id'), nullable=True)
+    value = Column(String(255), nullable=False)
+
+    record = relationship("Record", back_populates="data_entries")
+    measure = relationship("Measure", back_populates="data_entries")
+    dimension = relationship("Dimension", back_populates="data_entries")
+    time_dimension = relationship(
+        "TimeDimension", back_populates="data_entries")
+
+    def __repr__(self):
+        return f"<DataEntry(id={self.id}, value='{self.value}', record_id={self.record_id})>"
+
+
+# ======================
+# File: src/persistence/domain/__init__.py
+# ======================
+
+from .dataentry import DataEntry
+from .dataset import DataSet
+from .dimension import Dimension
+from .measure import Measure
+from .record import Record
+from .source import Source
+from .timedimension import TimeDimension
+
+__all__ = [
+    "DataEntry",
+    "DataSet",
+    "Dimension",
+    "Measure",
+    "Record",
+    "Source",
+    "TimeDimension"
+]
+
+
+# ======================
+# File: src/persistence/domain/dataset.py
+# ======================
+
+from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from config.db_base import Base
+
+
+class DataSet(Base):
+    __tablename__ = 'datasets'
+
+    id = Column(Integer, primary_key=True, index=True)
+    source_id = Column(Integer, ForeignKey('sources.id'))
+    query = Column(JSONB, nullable=False)
+    annotations = Column(JSONB, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    source = relationship("Source", back_populates="datasets")
+    measures = relationship(
+        "Measure", back_populates="dataset", cascade="all, delete-orphan")
+    dimensions = relationship(
+        "Dimension", back_populates="dataset", cascade="all, delete-orphan")
+    time_dimensions = relationship(
+        "TimeDimension", back_populates="dataset", cascade="all, delete-orphan")
+    records = relationship(
+        "Record", back_populates="dataset", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<DataSet(id={self.id}, source_id={self.source_id})>"
+
+
+# ======================
+# File: src/persistence/domain/record.py
+# ======================
+
+from sqlalchemy import Column, Integer, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from config.db_base import Base
+from .dataset import DataSet  # Ensure DataSet is imported
+
+class Record(Base):
+    __tablename__ = 'records'
+
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    dataset = relationship("DataSet", back_populates="records")
+    data_entries = relationship(
+        "DataEntry", back_populates="record", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Record(id={self.id}, dataset_id={self.dataset_id}, created_at={self.created_at})>"
+
+
+# ======================
+# File: src/persistence/domain/source.py
+# ======================
+
+from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy.orm import relationship
+from config.db_base import Base
+from .dataset import DataSet  # Ensure DataSet is imported
+
+
+class Source(Base):
+    __tablename__ = 'sources'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+
+    datasets = relationship("DataSet", back_populates="source")
+
+    def __repr__(self):
+        return f"<Source(id={self.id}, name='{self.name}')>"
+
+
+# ======================
+# File: src/persistence/domain/dimension.py
+# ======================
+
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from config.db_base import Base
+
+
+class Dimension(Base):
+    __tablename__ = 'dimensions'
+
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
+    name = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=True)
+    short_title = Column(String(100), nullable=True)
+    type = Column(String(100), nullable=True)
+
+    dataset = relationship("DataSet", back_populates="dimensions")
+    data_entries = relationship("DataEntry", back_populates="dimension")
+
+    def __repr__(self):
+        return f"<Dimension(id={self.id}, name='{self.name}', dataset_id={self.dataset_id})>"
+
+
+# ======================
+# File: src/persistence/domain/timedimension.py
+# ======================
+
+from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from config.db_base import Base
+from .dataset import DataSet  # Ensure DataSet is imported
+
+
+class TimeDimension(Base):
+    __tablename__ = 'time_dimensions'
+
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
+    name = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=True)
+    short_title = Column(String(100), nullable=True)
+    description = Column(Text, nullable=True)
+    type = Column(String(100), nullable=True)
+    granularity = Column(String(100), nullable=True)
+
+    dataset = relationship("DataSet", back_populates="time_dimensions")
+    data_entries = relationship("DataEntry", back_populates="time_dimension")
+
+    def __repr__(self):
+        return f"<TimeDimension(id={self.id}, name='{self.name}', granularity='{self.granularity}', dataset_id={self.dataset_id})>"
+
+
+# ======================
+# File: src/api/__init__.py
+# ======================
+
+
+
+# ======================
+# File: src/api/main.py
+# ======================
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Clay: Capture, Load, Analyze, and Yield!"}
+
+@app.get("/status")
+def get_status():
+    return {"status": "Clay is running"}
+
+def init_api():
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
