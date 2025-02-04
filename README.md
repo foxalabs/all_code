@@ -43,7 +43,7 @@ The **All Code Aggregator** script automatically excludes specific directories a
 
 The following directories are excluded by default:
 
-- `venv`
+- `venv`z
 - `node_modules`
 - `__pycache__`
 - `.git`
