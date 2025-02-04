@@ -17,22 +17,22 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 ## Usage
 **Basic usage**
 ```bash
-python aggregate_code.py
+python all_code.py
 ```
 
 **Specify a Directory**
 ```bash
-python aggregate_code.py -d /path/to/start/directory
+python all_code.py -d /path/to/start/directory
 ```
 
 **Copy Aggregated Content to Clipboard Instead of Writing to File**
 ```bash
-python aggregate_code.py -c
+python all_code.py -c
 ```
 
 **Combine Both Arguments: Specify Directory and Copy to Clipboard**
 ```bash
-python aggregate_code.py -d /path/to/start/directory -c
+python all_code.py -d /path/to/start/directory -c
 ```
 
 ## Exclusions
