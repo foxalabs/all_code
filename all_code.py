@@ -30,9 +30,27 @@ FILES_TO_INCLUDE = {}  # if empty, include all files
 
 # Define programming-related file extensions (removed '.json' and '.md')
 PROGRAMMING_EXTENSIONS = {
-    '.py', '.java', '.c', '.cpp', '.js', '.ts', '.html', '.css',
-    '.rb', '.go', '.php', '.swift', '.kt', '.rs', '.scala', '.sh',
-    '.pl', '.lua', '.sql', '.xml', '.yml', '.yaml', 'json'
+    # General Programming Languages
+    '.py', '.java', '.c', '.cpp', '.h', '.hpp', '.cs', '.vb', '.r', 
+    '.rb', '.go', '.php', '.swift', '.kt', '.rs', '.scala', '.pl', '.lua',
+    
+    # Web Development
+    '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss', '.less', '.sass',
+
+    # Shell & Automation
+    '.sh', '.zsh', '.fish', '.ps1', '.bat', '.cmd',
+
+    # Database & Query Languages
+    '.sql', '.psql', '.db', '.sqlite',
+
+    # Markup & Config Files
+    '.xml', '.json', '.toml', '.ini', '.yml', '.yaml', '.md', '.rst',
+
+    # Build & Make Systems
+    '.Makefile', '.gradle', '.cmake', '.ninja',
+
+    # Other
+    '.pqm', '.pq'
 }
 
 # Define directories to exclude during file aggregation and directory tree generation
