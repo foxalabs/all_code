@@ -14,6 +14,27 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 
 1. **Clone the Repository**
 
+## Usage
+**Basic usage**
+```bash
+python all_code.py
+```
+
+**Specify a Directory**
+```bash
+python all_code.py -d /path/to/start/directory
+```
+
+**Copy Aggregated Content to Clipboard Instead of Writing to File**
+```bash
+python all_code.py -c
+```
+
+**Combine Both Arguments: Specify Directory and Copy to Clipboard**
+```bash
+python all_code.py -d /path/to/start/directory -c
+```
+
 ## Exclusions
 
 The **All Code Aggregator** script automatically excludes specific directories and files to streamline the aggregation process and avoid including unnecessary or sensitive information.
@@ -22,7 +43,7 @@ The **All Code Aggregator** script automatically excludes specific directories a
 
 The following directories are excluded by default:
 
-- `venv`
+- `venv`z
 - `node_modules`
 - `__pycache__`
 - `.git`
