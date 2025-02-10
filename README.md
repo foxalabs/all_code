@@ -187,3 +187,18 @@ console.log("Subtract: " + subtract(5, 3)); // Output: Subtract: 2
 console.log("Multiply: " + multiply(5, 3)); // Output: Multiply: 15
 console.log("Divide: " + divide(5, 3));     // Output: Divide: 1.6666666666666667
 ```
+## Contributors
+
+Thanks goes to these wonderful people:
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/hermesribeiro"><img src="https://avatars.githubusercontent.com/hermesribeiro?v=3?s=100" width="100px;" alt=""/><br /><sub><b>Hermes Ribeiro</b></sub></a><br /><a href="#code-hermesribeiro" title="Code">💻</a></td>
+  </tr>
+</table>
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
