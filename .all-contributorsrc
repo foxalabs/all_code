@@ -1,9 +1,18 @@
 {
+  "projectOwner": "foxalabs",
+  "projectName": "all_code",
+  "files": [
+    "README.md"
+  ],
   "contributors": [
     {
       "login": "hermesribeiro",
       "name": "Hermes Ribeiro",
-      "contributions": ["code"]
+      "contributions": [
+        "code"
+      ]
     }
-  ]
+  ],
+  "repoType": "github",
+  "commitConvention": "angular"
 }
