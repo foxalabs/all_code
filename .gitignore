@@ -1,0 +1,5 @@
+# Python folders
+venv
+.venv
+__pycache__
+dist

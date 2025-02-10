@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **All Code Aggregator** script consolidates all programming-related code files in the current directory into a single `full_code.txt` file. This is especially useful for providing your entire codebase to AI models for analysis or assistance.
+The **All Code Aggregator** script consolidates all programming-related code files in the current directory into a single `full_code.txt` file. This is especially useful for providing your entire codebase to AI models for analysis or assistance, because sometimes you just want to copy paste code back and forth from whatever IDE to whatever LLM frontend, but you just have too many files for it to be practical.
 
 ## Features
 
@@ -12,7 +12,78 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 
 ## Setup
 
-1. **Clone the Repository**
+### Using UV (Recommended)
+
+Since All Code Aggregator is better used as a command-line interface, installing with [uv](https://docs.astral.sh/uv/) makes `all-code` command automatically available system wide without interfering with the system python or with virtual environments.
+
+1. **Install uv**
+
+Use the one line standalone installer from uv's [docs page](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
+
+2. **Install All Code Aggregator CLI from github source**
+
+```
+uv tool install git+https://github.com/hermesribeiro/all_code@0.2.0
+```
+
+3. **Use it in your project**
+
+```
+# Run the CLI command to generate the Aggregated code.
+all-code
+# Shell output:
+# Full code file 'full_code.txt' has been created successfully.
+```
+
+
+### Using venv+pip
+
+A python native method of installing. Requires an activated virtualenv to be used.
+
+1. **Install it in a virtualenv using pip**
+
+```
+# Create a virtual environment
+python3 -m venv venv
+# Activate the virtual environment
+source venv/bin/activate
+# Install the package
+pip install git+https://github.com/hermesribeiro/all_code@0.2.0
+```
+
+2. **Use it in your project**
+
+```
+# Run the CLI command to generate the Aggregated code.
+all-code
+# Shell output:
+# Full code file 'full_code.txt' has been created successfully.
+```
+
+## File creation options
+
+Find a list of all available options to customize the output file with the command below. This is useful for specifying only a few files  or to exclude specific directories from the final text to be used in a prompt.
+
+
+```
+all-code --help
+
+ Usage: all-code [OPTIONS]
+
+ Generate a master file containing the directory tree and contents of specified programming files.
+
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --output-file         -o      TEXT  Name of the master file to create. [default: full_code.txt]                                                                                   │
+│ --include-files       -i      TEXT  Comma-separated list of specific files to include. If not provided, all files are included. [default: None]                                   │
+│ --extensions          -x      TEXT  Comma-separated list of programming file extensions to include. Default '.py, .rs, .html, .pl, .json, .css, .c, .yaml, .ts, .yml, .sql, .cpp, │
+│                                     .scala, .xml, .lua, .php, .kt, .swift, .sh, .java, .rb, .js, .go'.                                                                            │
+│ --exclude-dirs        -e      TEXT  Comma-separated list of directories to join the default exclude dirs list 'node_modules, __pycache__, .venv, dist, build, venv, .git'         │
+│ --install-completion                Install completion for the current shell.                                                                                                     │
+│ --show-completion                   Show completion for the current shell, to copy it or customize the installation.                                                              │
+│ --help                              Show this message and exit.                                                                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
 
 ## Usage
 **Basic usage**
@@ -43,15 +114,17 @@ The **All Code Aggregator** script automatically excludes specific directories a
 
 The following directories are excluded by default:
 
+<<<<<<< HEAD
 - `venv`z
+=======
+- `venv`
+- `.venv`
+>>>>>>> c99f4db69f522231f9c8ce75b85e4e5c93b78449
 - `node_modules`
 - `__pycache__`
 - `.git`
 - `dist`
 - `build`
-- `temp`
-- `old_files`
-- `flask_session`
 
 **Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
 
