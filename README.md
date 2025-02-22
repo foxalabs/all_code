@@ -35,6 +35,28 @@ python all_code.py -c
 python all_code.py -d /path/to/start/directory -c
 ```
 
+**More options**
+```bash
+python all_code.py --help
+usage: all_code.py [-h] [-c] [-d DIRECTORY] [-o OUTPUT_FILE] [-i INCLUDE_FILES] [-x EXTENSIONS] [-e EXCLUDE_DIRS]
+
+Aggregate code files into a master file with a directory tree.
+
+options:
+  -h, --help            show this help message and exit
+  -c, --clipboard       Copy the aggregated content to the clipboard instead of writing to a file.
+  -d, --directory DIRECTORY
+                        Specify the directory to start aggregation from. Defaults to the current working directory.
+  -o, --output-file OUTPUT_FILE
+                        Name of the output file. Defaults to full_code.txt.
+  -i, --include-files INCLUDE_FILES
+                        Comma-separated list of files to include. If not provided, all files are included.
+  -x, --extensions EXTENSIONS
+                        Comma-separated list of programming extensions to use. Replaces the default set if provided.
+  -e, --exclude-dirs EXCLUDE_DIRS
+                        Comma-separated list of directories to exclude. Replaces the default set if provided.
+```
+
 ## Exclusions
 
 The **All Code Aggregator** script automatically excludes specific directories and files to streamline the aggregation process and avoid including unnecessary or sensitive information.
@@ -118,3 +140,14 @@ console.log("Subtract: " + subtract(5, 3)); // Output: Subtract: 2
 console.log("Multiply: " + multiply(5, 3)); // Output: Multiply: 15
 console.log("Divide: " + divide(5, 3));     // Output: Divide: 1.6666666666666667
 ```
+
+
+## Testing the script
+
+If you want to test the script, run the following command.
+
+```bash
+python test_all_code.py
+```
+
+As of the current commit, only the command line args and their effects were tested, but more tests can be added in the future.
