@@ -1,1111 +1,850 @@
 Directory Tree:
-clay/
-│   ├── .DS_Store
-│   ├── Makefile
-│   ├── .devcontainer
+all_code/
 │   ├── README.md
-│   ├── .gitignore
-│   ├── .env
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   ├── entrypoint.sh
-│   ├── docker/
-│   │   ├── Dockerfile
-│   ├── tests/
-│   │   ├── test_persistence.py
-│   │   ├── test_ingestion.py
-│   │   ├── test_transformation.py
-│   ├── db/
-│   │   ├── init.sql/
+│   ├── full_code.txt
+│   ├── test_all_code.py
 │   ├── .git/ [EXCLUDED]
-│   ├── .vscode/
-│   │   ├── settings.json
-│   ├── src/
-│   │   ├── .DS_Store
-│   │   ├── requirements.txt
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   ├── ingestion/
-│   │   │   ├── ingestion_agent.py
-│   │   │   ├── web_scraper.py
-│   │   │   ├── __init__.py
-│   │   │   ├── snowflake_ingestion.py
-│   │   │   ├── local_ingestion.py
-│   │   ├── config/
-│   │   │   ├── __init__.py
-│   │   │   ├── settings.py
-│   │   │   ├── db_init.py
-│   │   │   ├── db_base.py
-│   │   ├── transformation/
-│   │   │   ├── schema_definitions.py
-│   │   │   ├── transformations.py
-│   │   │   ├── __init__.py
-│   │   │   ├── transform_agent.py
-│   │   ├── persistence/
-│   │   │   ├── __init__.py
-│   │   │   ├── data_lake.py
-│   │   │   ├── postgres_writer.py
-│   │   │   ├── application/
-│   │   │   │   ├── __init__.py
-│   │   │   ├── infrastructure/
-│   │   │   │   ├── __init__.py
-│   │   │   ├── domain/
-│   │   │   │   ├── measure.py
-│   │   │   │   ├── dataentry.py
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── dataset.py
-│   │   │   │   ├── record.py
-│   │   │   │   ├── source.py
-│   │   │   │   ├── dimension.py
-│   │   │   │   ├── timedimension.py
-│   │   ├── api/
-│   │   │   ├── __init__.py
-│   │   │   ├── main.py
+│   ├── .venv/
+│   │   ├── pyvenv.cfg
+│   │   ├── CACHEDIR.TAG
+│   │   ├── .gitignore
+│   │   ├── lib/
+│   │   │   ├── python3.13/
+│   │   │   │   ├── site-packages/
+│   │   │   │   │   ├── _virtualenv.pth
+│   │   │   │   │   ├── _virtualenv.py
+│   │   │   │   │   ├── __pycache__/ [EXCLUDED]
+│   │   ├── bin/
+│   │   │   ├── activate.ps1
+│   │   │   ├── activate.csh
+│   │   │   ├── python
+│   │   │   ├── pydoc.bat
+│   │   │   ├── activate.fish
+│   │   │   ├── activate.bat
+│   │   │   ├── python3
+│   │   │   ├── activate_this.py
+│   │   │   ├── deactivate.bat
+│   │   │   ├── activate.nu
+│   │   │   ├── activate
+│   │   │   ├── python3.13
 
 
 
 
 # ======================
-# File: docker-compose.yml
+# File: README.md
 # ======================
 
-services:
-  db:
-    image: postgres:14
-    container_name: postgres_db
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # Optional initialization
-    networks:
-      - app-network
+# All Code Aggregator
 
-  app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    container_name: clay
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    networks:
-      - app-network
-    volumes:
-      - ./src:/code/src
-      - ./entrypoint.sh:/code/entrypoint.sh
+## Overview
 
-networks:
-  app-network:
-    driver: bridge
+The **All Code Aggregator** script consolidates all programming-related code files in the current directory into a single `full_code.txt` file. This is especially useful for providing your entire codebase to AI models for analysis or assistance.
 
-volumes:
-  db_data:
+## Features
+
+- **Directory Tree Generation**: Creates an ASCII representation of the directory structure, excluding specified directories.
+- **Code Aggregation**: Combines contents of programming-related files into a master file.
+- **Customizable Inclusions/Exclusions**: Easily specify which files or directories to include or exclude.
+
+## Setup
+
+1. **Clone the Repository**
+
+## Usage
+**Basic usage**
+```bash
+python all_code.py
+```
+
+**Specify a Directory**
+```bash
+python all_code.py -d /path/to/start/directory
+```
+
+**Copy Aggregated Content to Clipboard Instead of Writing to File**
+```bash
+python all_code.py -c
+```
+
+**Combine Both Arguments: Specify Directory and Copy to Clipboard**
+```bash
+python all_code.py -d /path/to/start/directory -c
+```
+
+## Exclusions
+
+The **All Code Aggregator** script automatically excludes specific directories and files to streamline the aggregation process and avoid including unnecessary or sensitive information.
+
+### Excluded Directories
+
+The following directories are excluded by default:
+
+- `venv`z
+- `node_modules`
+- `__pycache__`
+- `.git`
+- `dist`
+- `build`
+- `temp`
+- `old_files`
+- `flask_session`
+
+**Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
+
+**Example Output to full_code.txt**
+```
+Directory Tree:
+all_code/
+│   ├── full_code.txt
+│   ├── README.md
+│   ├── test.py
+│   ├── .git/ [EXCLUDED]
+│   ├── demo_folder/
+│   │   ├── another_file.js
+
+
 
 
 # ======================
-# File: entrypoint.sh
+# File: test.py
 # ======================
 
-#!/bin/sh
+def greet(name):
+    return f"Hello, {name}!"
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+if __name__ == "__main__":
+    print(greet("World"))
+    def farewell(name):
+        return f"Goodbye, {name}!"
 
-# Function to check if PostgreSQL is up
-wait_for_postgres() {
-  echo "Waiting for PostgreSQL to be available..."
-  while ! nc -z db 5432; do
-    sleep 0.1
-  done
-  echo "PostgreSQL is up!"
+    print(farewell("World"))
+
+# ======================
+# File: demo_folder\another_file.js
+# ======================
+
+// another_file.js
+
+// Function to add two numbers
+function add(a, b) {
+    return a + b;
 }
 
-# Set PYTHONPATH to include /code
-export PYTHONPATH=/code/src
+// Function to subtract two numbers
+function subtract(a, b) {
+    return a - b;
+}
 
-# Wait for PostgreSQL
-wait_for_postgres
+// Function to multiply two numbers
+function multiply(a, b) {
+    return a * b;
+}
 
-# Initialize the database (if needed)
-echo "Initializing the database..."
-python -m src.config.db_init
+// Function to divide two numbers
+function divide(a, b) {
+    if (b === 0) {
+        throw new Error("Division by zero is not allowed.");
+    }
+    return a / b;
+}
 
-# Start the main application
-echo "Starting the application..."
-exec "$@"
-
-
-# ======================
-# File: tests/test_persistence.py
-# ======================
-
-"""
-Tests for persistence components.
-"""
-
-def test_persistence():
-    assert True, "Placeholder test for persistence."
-
+// Example usage
+console.log("Add: " + add(5, 3));         // Output: Add: 8
+console.log("Subtract: " + subtract(5, 3)); // Output: Subtract: 2
+console.log("Multiply: " + multiply(5, 3)); // Output: Multiply: 15
+console.log("Divide: " + divide(5, 3));     // Output: Divide: 1.6666666666666667
+```
 
 
 # ======================
-# File: tests/test_ingestion.py
+# File: test_all_code.py
 # ======================
 
 """
-Tests for ingestion components.
+Test script for all_code.py command-line arguments.
+
+This script creates temporary directories and files, then uses the built-in
+subprocess module to run all_code.py with different options:
+
+- Default behavior (creates 'full_code.txt')
+- Overriding the output file name with -o/--output-file
+- Including only specific files with -i/--include-files
+- Overriding programming extensions with -x/--extensions
+- Excluding directories with -e/--exclude-dirs
+
+No external libraries are required.
 """
-
-def test_ingestion():
-    assert True, "Placeholder test for ingestion."
-
-
-
-# ======================
-# File: tests/test_transformation.py
-# ======================
-
-"""
-Tests for transformation components.
-"""
-
-def test_transformation():
-    assert True, "Placeholder test for transformation."
-
-
-
-# ======================
-# File: src/__init__.py
-# ======================
-
-# src/__init__.py
-# Initialization for the src package.
-
-
-
-# ======================
-# File: src/app.py
-# ======================
-
-# ======================
-# File: src/app.py
-# ======================
-import time
-from api.main import init_api
-# ADDED:
-from ingestion.ingestion_agent import run_ingestion  # CHANGED (new import)
-
-def main():
-    print("Welcome to Clay: Capture, Load, Analyze, and Yield!")
-    print("Clay is now running. Press Ctrl+C to stop.")
-    init_api()
-
-    # ADDED (Demo usage - optional):
-    # If you want a quick demonstration of ingestion from a URL,
-    # you can uncomment these lines or handle it differently:
-    #
-    # url_to_scrape = "https://example.com/some-page-with-csv"
-    # run_ingestion(url_to_scrape)
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nShutting down Clay...")
-
-
-if __name__ == '__main__':
-    main()
-
-
-# ======================
-# File: src/ingestion/ingestion_agent.py
-# ======================
 
 import os
-import requests
-import pandas as pd
-from pathlib import Path
-from typing import List, Dict
-from config.db_base import SessionLocal
-from sqlalchemy.orm import Session
+import shutil
+import subprocess
+import tempfile
 
-# Domain imports
-from persistence.domain.source import Source
-from persistence.domain.dataset import DataSet
-from persistence.domain.measure import Measure
-from persistence.domain.dimension import Dimension
-from persistence.domain.timedimension import TimeDimension
-from persistence.domain.record import Record
-from persistence.domain.dataentry import DataEntry
+SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "all_code.py")
 
-# We'll import from web_scraper for scraping logic
-from .web_scraper import find_tabular_files
 
-# ADDED (for local file reading)
-from .local_ingestion import read_tabular_file  # CHANGED (function we’ll define here or in local_ingestion)
-
-def prompt_user_selection(file_links: List[str]) -> List[str]:
+def run_script(args, cwd):
     """
-    # ADDED (new function)
-    Presents the user with a list of discovered files and asks which ones to ingest.
-    Returns a list of the user-selected files.
+    Run all_code.py with the provided command-line arguments in directory cwd.
     """
-    if not file_links:
-        print("No tabular files found.")
-        return []
-
-    print("The following files were found:")
-    for i, link in enumerate(file_links, start=1):
-        print(f"{i}. {link}")
-
-    selection = input("Enter the file numbers you want to ingest (comma-separated): ")
-    if not selection.strip():
-        return []
-    selected_indices = [int(x.strip()) for x in selection.split(",") if x.strip().isdigit()]
-
-    selected_files = [file_links[i-1] for i in selected_indices if 0 < i <= len(file_links)]
-    return selected_files
+    cmd = ["python", SCRIPT_PATH] + args
+    result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+    return result
 
 
-def download_file(url: str, download_path: str) -> str:
-    """
-    # ADDED (new function)
-    Downloads the file from `url` to `download_path`, returns the local file path.
-    """
-    local_filename = os.path.join(download_path, os.path.basename(url))
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-    return local_filename
+def test_default_arguments():
+    # Create a temporary directory to serve as the source for aggregation.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # Copy all_code.py to tmp directory  and run it without any args
+        TMP_SCRIPT_PATH = shutil.copy(SCRIPT_PATH, tmp_dir)
+        cmd = ["python", TMP_SCRIPT_PATH]
+        subprocess.run(cmd, cwd=tmp_dir, capture_output=True, text=True)
+
+        assert os.path.exists(os.path.join(tmp_dir, "full_code.txt")), "full_code.txt not created by default"
 
 
-def infer_schema(df: pd.DataFrame) -> Dict[str, str]:
-    """
-    # ADDED (new function)
-    Infer whether each column is a measure (numeric),
-    dimension (string/categorical), or time dimension (date-like).
-    Returns a dict of {column_name: "measure"|"dimension"|"time"}
-    """
-    inferred = {}
-    for col in df.columns:
-        # Simple heuristic approach
-        # Try to see if all non-NA values can parse as float => measure
-        # Or parse as date => time
-        # else => dimension
-        col_data = df[col].dropna()
-        if col_data.empty:
-            # default to dimension if no data
-            inferred[col] = "dimension"
-            continue
-
-        # Check date parse
-        try:
-            pd.to_datetime(col_data, infer_datetime_format=True)
-            # If no error => it's a time dimension
-            inferred[col] = "time"
-            continue
-        except:
-            pass
-
-        # Check numeric parse
-        try:
-            col_data.astype(float)
-            # If no error => measure
-            inferred[col] = "measure"
-            continue
-        except:
-            pass
-
-        # Otherwise dimension
-        inferred[col] = "dimension"
-
-    return inferred
+def test_directory_argument():
+    with tempfile.TemporaryDirectory() as source_dir:
+        # Create a dummy Python file in the source directory.
+        dummy_file = os.path.join(source_dir, "dummy.py")
+        with open(dummy_file, "w") as f:
+            f.write("print('Aggregating from source directory')")
+        # Use a separate temporary directory as the working directory for the script.
+        with tempfile.TemporaryDirectory() as tmp_working:
+            custom_output = "test_output.txt"
+            # Run the script with -d pointing to the source directory.
+            run_script(["-d", source_dir, "-o", custom_output], cwd=tmp_working)
+            output_file = os.path.join(tmp_working, custom_output)
+            assert os.path.exists(output_file), "Output file not created when using --directory"
+            with open(output_file, "r") as f:
+                content = f.read()
+            assert "dummy.py" in content, "Aggregated content does not reflect the --directory argument"
+            print("test_directory_argument passed.")
 
 
-def process_dataframe_for_standard_model(
-    df: pd.DataFrame,
-    inferred_schema: Dict[str, str],
-    source_name: str
-):
-    """
-    # ADDED (new function)
-    1. Create or retrieve a Source row for source_name.
-    2. Create a new DataSet referencing that Source.
-    3. Create Measure/Dimension/TimeDimension rows for each column.
-    4. For each row, create a Record + DataEntry linking the correct measure/dim/dates.
-    """
-    session: Session = SessionLocal()
+def test_default_output():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create a dummy Python file so that there is something to include.
+        dummy_file = os.path.join(tmpdir, "dummy.py")
+        with open(dummy_file, "w") as f:
+            f.write("print('Hello World')")
 
-    try:
-        # 1. Get or create Source
-        source = session.query(Source).filter(Source.name == source_name).first()
-        if not source:
-            source = Source(name=source_name, description=f"Ingested from {source_name}")
-            session.add(source)
-            session.commit()
-
-        # 2. Create new DataSet
-        dataset = DataSet(source_id=source.id, query={})
-        session.add(dataset)
-        session.commit()
-
-        # 3. Create measure/dimension/time records
-        measure_dict = {}
-        dimension_dict = {}
-        time_dimension_dict = {}
-
-        for col_name, col_role in inferred_schema.items():
-            if col_role == "measure":
-                m = Measure(dataset_id=dataset.id, name=col_name)
-                session.add(m)
-                session.flush()  # get id
-                measure_dict[col_name] = m
-            elif col_role == "dimension":
-                d = Dimension(dataset_id=dataset.id, name=col_name)
-                session.add(d)
-                session.flush()
-                dimension_dict[col_name] = d
-            elif col_role == "time":
-                t = TimeDimension(dataset_id=dataset.id, name=col_name)
-                session.add(t)
-                session.flush()
-                time_dimension_dict[col_name] = t
-
-        session.commit()
-
-        # 4. For each row in the DataFrame
-        for idx, row in df.iterrows():
-            record = Record(dataset_id=dataset.id)
-            session.add(record)
-            session.flush()  # get record.id
-
-            for col_name, value in row.items():
-                if pd.isna(value):
-                    continue
-
-                if col_name in measure_dict:
-                    data_entry = DataEntry(
-                        record_id=record.id,
-                        measure_id=measure_dict[col_name].id,
-                        value=str(value)
-                    )
-                elif col_name in dimension_dict:
-                    data_entry = DataEntry(
-                        record_id=record.id,
-                        dimension_id=dimension_dict[col_name].id,
-                        value=str(value)
-                    )
-                elif col_name in time_dimension_dict:
-                    data_entry = DataEntry(
-                        record_id=record.id,
-                        time_dimension_id=time_dimension_dict[col_name].id,
-                        value=str(value)
-                    )
-                else:
-                    # If it's unclassified for some reason
-                    continue
-
-                session.add(data_entry)
-
-            session.commit()
-
-        print(f"Ingested DataFrame into Source(ID={source.id}), DataSet(ID={dataset.id}).")
-    except Exception as e:
-        session.rollback()
-        print(f"Error during ingestion: {e}")
-    finally:
-        session.close()
+        # Run the script with default output (should create full_code.txt)
+        run_script(["-d", tmpdir], cwd=tmpdir)
+        output_file = os.path.join(tmpdir, "full_code.txt")
+        assert os.path.exists(output_file), "Default output file not created"
+        print("test_default_output passed.")
 
 
-def run_ingestion(url: str):
-    """
-    # CHANGED (entire function)
-    Main function to coordinate ingestion from a webpage containing CSV/Excel files.
-    """
-    # 1. Find tabular files on the page
-    results = find_tabular_files(url, file_types=[".csv",".xlsx",".xls",".tsv"])
-    file_links = results.get("file_links", [])
+def test_override_output_file():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dummy_file = os.path.join(tmpdir, "dummy.py")
+        with open(dummy_file, "w") as f:
+            f.write("print('Hello World')")
 
-    # 2. Prompt user
-    selected_files = prompt_user_selection(file_links)
-    if not selected_files:
-        print("No files selected. Exiting.")
-        return
-
-    # 3. Download & read each file, then store
-    download_dir = Path("./data_lake")
-    download_dir.mkdir(exist_ok=True)
-
-    for link in selected_files:
-        local_path = download_file(link, str(download_dir))
-        df = read_tabular_file(local_path)  # read into DataFrame
-        column_roles = infer_schema(df)
-        process_dataframe_for_standard_model(df, column_roles, source_name=url)
-
-    print("Ingestion complete!")
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) != 2:
-        print("Usage: python ingestion_agent.py <url>")
-        sys.exit(1)
-
-    url_to_scrape = sys.argv[1]
-    run_ingestion(url_to_scrape)
-
-# ======================
-# File: src/ingestion/web_scraper.py
-# ======================
-
-import argparse
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from urllib.parse import urljoin
+        custom_output = "custom_output.txt"
+        run_script(["-d", tmpdir, "-o", custom_output], cwd=tmpdir)
+        output_file = os.path.join(tmpdir, custom_output)
+        assert os.path.exists(output_file), "Overridden output file not created"
+        print("test_override_output_file passed.")
 
 
-def find_tabular_files(url, file_types=None):
-    """
-    # CHANGED: Renamed from find_downloadable_files to find_tabular_files;
-    # extended to handle .tsv if you want, plus any other logic you like.
-    Searches a webpage for links to downloadable files that match typical tabular extensions.
+def test_include_files():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create two Python files.
+        file1 = os.path.join(tmpdir, "dummy.py")
+        with open(file1, "w") as f:
+            f.write("print('Hello from dummy')")
 
-    :param url: The website URL to scrape.
-    :param file_types: A list of file extensions (e.g., ['.csv', '.xlsx']).
-    :return: A dict with "file_links" and optionally "html_tables".
-    """
+        file2 = os.path.join(tmpdir, "extra.py")
+        with open(file2, "w") as f:
+            f.write("print('Hello from extra')")
 
-    # Default file extensions if none are provided
-    if file_types is None:
-        file_types = ['.pdf', '.csv', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx',
-                      '.zip', '.tar', '.gz', '.rar']
-
-    chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/chromium"
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--window-size=1920x1080")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    # CHANGED: Use a fixed path to chromedriver (instead of ChromeDriverManager)
-    service = Service("/usr/bin/chromedriver")
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    try:
-        print(f"Loading page: {url}")
-        driver.get(url)
-
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "a")))
-
-        links = driver.find_elements(By.TAG_NAME, "a")
-
-        file_links = []
-        for link in links:
-            href = link.get_attribute("href")
-            if href and any(href.lower().endswith(ext) for ext in file_types):
-                absolute_url = urljoin(url, href)
-                file_links.append(absolute_url)
-
-        return {
-            "file_links": file_links,
-        }
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return {"file_links": []}
-    finally:
-        driver.quit()
+        # Specify only dummy.py to be included.
+        run_script(["-d", tmpdir, "-i", "dummy.py"], cwd=tmpdir)
+        output_file = os.path.join(tmpdir, "full_code.txt")
+        with open(output_file, "r") as f:
+            content = f.read()
+        assert "dummy.py" in content, "dummy.py should be included"
+        assert "print('Hello from extra')" not in content, "extra.py should not be included"
+        print("test_include_files passed.")
 
 
-def main():
-    """
-    Command-line interface for scraping downloadable files from a website.
-    """
-    parser = argparse.ArgumentParser(description="Find downloadable files on a website.")
-    parser.add_argument("url", type=str, help="Website URL to scrape")
-    parser.add_argument(
-        "--file-types",
-        type=str,
-        default=".pdf,.csv,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.zip,.tar,.gz,.rar",
-        help="Comma-separated list of file extensions to filter (e.g., .pdf,.csv)"
-    )
-    parser.add_argument(
-        "--headless",
-        action="store_true",
-        default=True,
-        help="Run in headless mode (default: True)"
-    )
+def test_extensions():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create one .py file and one .txt file.
+        py_file = os.path.join(tmpdir, "dummy.py")
+        with open(py_file, "w") as f:
+            f.write("print('Python file')")
+        txt_file = os.path.join(tmpdir, "dummy.txt")
+        with open(txt_file, "w") as f:
+            f.write("This is a text file.")
 
-    args = parser.parse_args()
-    file_types = args.file_types.split(",")
+        # Override extensions to only include .py files.
+        run_script(["-d", tmpdir, "-x", ".py"], cwd=tmpdir)
+        output_file = os.path.join(tmpdir, "full_code.txt")
+        with open(output_file, "r") as f:
+            content = f.read()
+        assert "dummy.py" in content, "dummy.py should be included with .py extension"
+        assert "This is a text file." not in content, "dummy.txt should be excluded when only .py is allowed"
+        print("test_extensions passed.")
 
-    result = find_tabular_files(args.url, file_types)
 
-    files = result.get("file_links", [])
-    if files:
-        print("\nDownloadable files found:")
-        for file in files:
-            print(file)
-    else:
-        print("\nNo downloadable files found.")
+def test_exclude_dirs():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create a subdirectory that will be excluded.
+        exclude_dir = os.path.join(tmpdir, "exclude_me")
+        os.mkdir(exclude_dir)
+        file_in_excluded = os.path.join(exclude_dir, "dummy.py")
+        with open(file_in_excluded, "w") as f:
+            f.write("print('This file is in an excluded directory')")
+
+        # Run the script with exclude_dirs set to 'exclude_me'
+        run_script(["-d", tmpdir, "-e", "exclude_me"], cwd=tmpdir)
+        output_file = os.path.join(tmpdir, "full_code.txt")
+        with open(output_file, "r") as f:
+            content = f.read()
+        # The directory tree should mark exclude_me as excluded.
+        assert "exclude_me/ [EXCLUDED]" in content, "exclude_me directory should be marked as excluded"
+        # The file inside should not be aggregated.
+        assert "dummy.py" not in content, "File inside excluded directory should not be included"
+        print("test_exclude_dirs passed.")
 
 
 if __name__ == "__main__":
-    main()
+    test_default_arguments()
+    test_directory_argument()
+    test_default_output()
+    test_override_output_file()
+    test_include_files()
+    test_extensions()
+    test_exclude_dirs()
+    print("All tests passed!")
 
 
 # ======================
-# File: src/ingestion/__init__.py
+# File: .venv/lib/python3.13/site-packages/_virtualenv.py
 # ======================
 
-# src/ingestion/__init__.py
-# Initialization for ingestion module.
-
-
-
-# ======================
-# File: src/ingestion/snowflake_ingestion.py
-# ======================
-
-"""
-Logic for connecting to Snowflake tables/views and fetching data.
-"""
-
-def ingest_from_snowflake(table_name: str):
-    """
-    Query a Snowflake table/view and return data as a DataFrame.
-    """
-    pass
-
-
-
-# ======================
-# File: src/ingestion/local_ingestion.py
-# ======================
-
-# ======================
-# File: src/ingestion/local_ingestion.py
-# ======================
-"""
-Logic for reading files from a local directory or local paths.
-"""
+"""Patches that are applied at runtime to the virtual environment."""
 
 import os
-import pandas as pd
+import sys
 
-def ingest_from_local(directory_path: str):
+VIRTUALENV_PATCH_FILE = os.path.join(__file__)
+
+
+def patch_dist(dist):
     """
-    # No changes from the earlier placeholder if you want to keep a scanning approach.
-    # Could be used to find local CSV/XLS files, read them, and pass to processing.
-    """
-    pass
+    Distutils allows user to configure some arguments via a configuration file:
+    https://docs.python.org/3.11/install/index.html#distutils-configuration-files.
 
-def read_tabular_file(local_file_path: str) -> pd.DataFrame:
-    """
-    # ADDED (new function) - used by ingestion_agent
-    Reads CSV or Excel from a local path into a DataFrame.
-    Auto-detect extension and read accordingly.
-    """
-    ext = os.path.splitext(local_file_path)[1].lower()
-    if ext in [".csv", ".txt", ".tsv"]:
-        df = pd.read_csv(local_file_path)
-    elif ext in [".xls", ".xlsx"]:
-        df = pd.read_excel(local_file_path)
-    else:
-        raise ValueError(f"Unrecognized file extension: {ext}")
-    return df
+    Some of this arguments though don't make sense in context of the virtual environment files, let's fix them up.
+    """  # noqa: D205
+    # we cannot allow some install config as that would get packages installed outside of the virtual environment
+    old_parse_config_files = dist.Distribution.parse_config_files
 
+    def parse_config_files(self, *args, **kwargs):
+        result = old_parse_config_files(self, *args, **kwargs)
+        install = self.get_option_dict("install")
 
-# ======================
-# File: src/config/__init__.py
-# ======================
+        if "prefix" in install:  # the prefix governs where to install the libraries
+            install["prefix"] = VIRTUALENV_PATCH_FILE, os.path.abspath(sys.prefix)
+        for base in ("purelib", "platlib", "headers", "scripts", "data"):
+            key = f"install_{base}"
+            if key in install:  # do not allow global configs to hijack venv paths
+                install.pop(key, None)
+        return result
+
+    dist.Distribution.parse_config_files = parse_config_files
 
 
-
-# ======================
-# File: src/config/settings.py
-# ======================
-
-"""
-Global settings, environment variables, logging configurations, etc.
-"""
-
-import os
-
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'YOUR_DEFAULT_API_KEY')
-SNOWFLAKE_USER = os.environ.get('SNOWFLAKE_USER', '...')
-# Add more environment-based settings as needed.
+# Import hook that patches some modules to ignore configuration values that break package installation in case
+# of virtual environments.
+_DISTUTILS_PATCH = "distutils.dist", "setuptools.dist"
+# https://docs.python.org/3/library/importlib.html#setting-up-an-importer
 
 
+class _Finder:
+    """A meta path finder that allows patching the imported distutils modules."""
 
-# ======================
-# File: src/config/db_init.py
-# ======================
+    fullname = None
 
-import logging
-from sqlalchemy import create_engine, text
-import os
-from config.db_base import Base, engine  # updated import statement
+    # lock[0] is threading.Lock(), but initialized lazily to avoid importing threading very early at startup,
+    # because there are gevent-based applications that need to be first to import threading by themselves.
+    # See https://github.com/pypa/virtualenv/issues/1895 for details.
+    lock = []  # noqa: RUF012
 
-# Import all models to ensure they are registered with Base
-from persistence.domain.dataentry import DataEntry
-from persistence.domain.dataset import DataSet
-from persistence.domain.dimension import Dimension
-from persistence.domain.measure import Measure
-from persistence.domain.record import Record
-from persistence.domain.source import Source
-from persistence.domain.timedimension import TimeDimension
+    def find_spec(self, fullname, path, target=None):  # noqa: ARG002
+        if fullname in _DISTUTILS_PATCH and self.fullname is None:
+            # initialize lock[0] lazily
+            if len(self.lock) == 0:
+                import threading
 
-# Enable SQLAlchemy logging
-logging.basicConfig()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+                lock = threading.Lock()
+                # there is possibility that two threads T1 and T2 are simultaneously running into find_spec,
+                # observing .lock as empty, and further going into hereby initialization. However due to the GIL,
+                # list.append() operation is atomic and this way only one of the threads will "win" to put the lock
+                # - that every thread will use - into .lock[0].
+                # https://docs.python.org/3/faq/library.html#what-kinds-of-global-value-mutation-are-thread-safe
+                self.lock.append(lock)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+            from functools import partial
+            from importlib.util import find_spec
 
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable not set")
+            with self.lock[0]:
+                self.fullname = fullname
+                try:
+                    spec = find_spec(fullname, path)
+                    if spec is not None:
+                        # https://www.python.org/dev/peps/pep-0451/#how-loading-will-work
+                        is_new_api = hasattr(spec.loader, "exec_module")
+                        func_name = "exec_module" if is_new_api else "load_module"
+                        old = getattr(spec.loader, func_name)
+                        func = self.exec_module if is_new_api else self.load_module
+                        if old is not func:
+                            try:  # noqa: SIM105
+                                setattr(spec.loader, func_name, partial(func, old))
+                            except AttributeError:
+                                pass  # C-Extension loaders are r/o such as zipimporter with <3.7
+                        return spec
+                finally:
+                    self.fullname = None
+        return None
 
+    @staticmethod
+    def exec_module(old, module):
+        old(module)
+        if module.__name__ in _DISTUTILS_PATCH:
+            patch_dist(module)
 
-def ensure_database_exists():
-    """Check if the database exists and create it if not."""
-    db_name = os.getenv("POSTGRES_DB")
-    postgres_user = os.getenv("POSTGRES_USER")
-    postgres_password = os.getenv("POSTGRES_PASSWORD")
-    postgres_host = "db"  # Use Docker service name as the hostname
-    postgres_port = "5432"
-
-    # Base URL to connect to the `postgres` system database
-    base_url = (
-        f"postgresql://{postgres_user}:{postgres_password}@"
-        f"{postgres_host}:{postgres_port}/postgres"
-    )
-
-    # Connect to the system database
-    temp_engine = create_engine(base_url, isolation_level="AUTOCOMMIT")
-
-    print(f"Checking if database '{db_name}' exists...")
-    with temp_engine.connect() as conn:
-        # Query to check if the database exists
-        result = conn.execute(
-            text("SELECT 1 FROM pg_database WHERE datname = :db_name"),
-            {"db_name": db_name}
-        ).scalar()
-
-        # Create the database if it does not exist
-        if not result:
-            print(f"Database '{db_name}' does not exist. Creating...")
-            conn.execute(text(f"CREATE DATABASE {db_name}"))
-            print(f"Database '{db_name}' created successfully.")
-        else:
-            print(f"Database '{db_name}' already exists.")
+    @staticmethod
+    def load_module(old, name):
+        module = old(name)
+        if module.__name__ in _DISTUTILS_PATCH:
+            patch_dist(module)
+        return module
 
 
-ensure_database_exists()
-
-
-def init_db():
-    print("Creating database tables...")
-
-    # Debugging: Print the tables in Base.metadata
-    print("Tables in Base.metadata:")
-    for table_name in Base.metadata.tables.keys():
-        print(table_name)
-
-    # Create all tables defined in the Base's metadata
-    Base.metadata.create_all(bind=engine)
-    print("Database tables created successfully.")
-
-
-if __name__ == "__main__":
-    init_db()
+sys.meta_path.insert(0, _Finder())
 
 
 # ======================
-# File: src/config/db_base.py
+# File: .venv/bin/activate.ps1
 # ======================
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-import os
+# Copyright (c) 2020-202x The virtualenv developers
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+$script:THIS_PATH = $myinvocation.mycommand.path
+$script:BASE_DIR = Split-Path (Resolve-Path "$THIS_PATH/..") -Parent
 
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable not set")
+function global:deactivate([switch] $NonDestructive) {
+    if (Test-Path variable:_OLD_VIRTUAL_PATH) {
+        $env:PATH = $variable:_OLD_VIRTUAL_PATH
+        Remove-Variable "_OLD_VIRTUAL_PATH" -Scope global
+    }
 
-engine = create_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+    if (Test-Path function:_old_virtual_prompt) {
+        $function:prompt = $function:_old_virtual_prompt
+        Remove-Item function:\_old_virtual_prompt
+    }
 
+    if ($env:VIRTUAL_ENV) {
+        Remove-Item env:VIRTUAL_ENV -ErrorAction SilentlyContinue
+    }
 
-# ======================
-# File: src/transformation/schema_definitions.py
-# ======================
+    if ($env:VIRTUAL_ENV_PROMPT) {
+        Remove-Item env:VIRTUAL_ENV_PROMPT -ErrorAction SilentlyContinue
+    }
 
-"""
-Common schema definitions for standardizing data fields.
-"""
+    if (!$NonDestructive) {
+        # Self destruct!
+        Remove-Item function:deactivate
+        Remove-Item function:pydoc
+    }
+}
 
-COMMON_SCHEMA = {
-    # Example: 'full_name': 'string', 'city': 'string', etc.
+function global:pydoc {
+    python -m pydoc $args
+}
+
+# unset irrelevant variables
+deactivate -nondestructive
+
+$VIRTUAL_ENV = $BASE_DIR
+$env:VIRTUAL_ENV = $VIRTUAL_ENV
+
+if ("all_code" -ne "") {
+    $env:VIRTUAL_ENV_PROMPT = "all_code"
+}
+else {
+    $env:VIRTUAL_ENV_PROMPT = $( Split-Path $env:VIRTUAL_ENV -Leaf )
+}
+
+New-Variable -Scope global -Name _OLD_VIRTUAL_PATH -Value $env:PATH
+
+$env:PATH = "$env:VIRTUAL_ENV/bin:" + $env:PATH
+if (!$env:VIRTUAL_ENV_DISABLE_PROMPT) {
+    function global:_old_virtual_prompt {
+        ""
+    }
+    $function:_old_virtual_prompt = $function:prompt
+
+    function global:prompt {
+        # Add the custom prefix to the existing prompt
+        $previous_prompt_value = & $function:_old_virtual_prompt
+        ("(" + $env:VIRTUAL_ENV_PROMPT + ") " + $previous_prompt_value)
+    }
 }
 
 
+# ======================
+# File: .venv/bin/pydoc.bat
+# ======================
+
+@REM Copyright (c) 2020-202x The virtualenv developers
+@REM
+@REM Permission is hereby granted, free of charge, to any person obtaining
+@REM a copy of this software and associated documentation files (the
+@REM "Software"), to deal in the Software without restriction, including
+@REM without limitation the rights to use, copy, modify, merge, publish,
+@REM distribute, sublicense, and/or sell copies of the Software, and to
+@REM permit persons to whom the Software is furnished to do so, subject to
+@REM the following conditions:
+@REM
+@REM The above copyright notice and this permission notice shall be
+@REM included in all copies or substantial portions of the Software.
+@REM
+@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+@REM EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+@REM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+@REM NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+@REM LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+@REM OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+@REM WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+python.exe -m pydoc %*
 
 # ======================
-# File: src/transformation/transformations.py
+# File: .venv/bin/activate.fish
 # ======================
+
+# Copyright (c) 2020-202x The virtualenv developers
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# This file must be used using `source bin/activate.fish` *within a running fish ( http://fishshell.com ) session*.
+# Do not run it directly.
+
+function _bashify_path -d "Converts a fish path to something bash can recognize"
+    set fishy_path $argv
+    set bashy_path $fishy_path[1]
+    for path_part in $fishy_path[2..-1]
+        set bashy_path "$bashy_path:$path_part"
+    end
+    echo $bashy_path
+end
+
+function _fishify_path -d "Converts a bash path to something fish can recognize"
+    echo $argv | tr ':' '\n'
+end
+
+function deactivate -d 'Exit virtualenv mode and return to the normal environment.'
+    # reset old environment variables
+    if test -n "$_OLD_VIRTUAL_PATH"
+        # https://github.com/fish-shell/fish-shell/issues/436 altered PATH handling
+        if test (echo $FISH_VERSION | head -c 1) -lt 3
+            set -gx PATH (_fishify_path "$_OLD_VIRTUAL_PATH")
+        else
+            set -gx PATH $_OLD_VIRTUAL_PATH
+        end
+        set -e _OLD_VIRTUAL_PATH
+    end
+
+    if test -n "$_OLD_VIRTUAL_PYTHONHOME"
+        set -gx PYTHONHOME "$_OLD_VIRTUAL_PYTHONHOME"
+        set -e _OLD_VIRTUAL_PYTHONHOME
+    end
+
+    if test -n "$_OLD_FISH_PROMPT_OVERRIDE"
+       and functions -q _old_fish_prompt
+        # Set an empty local `$fish_function_path` to allow the removal of `fish_prompt` using `functions -e`.
+        set -l fish_function_path
+
+        # Erase virtualenv's `fish_prompt` and restore the original.
+        functions -e fish_prompt
+        functions -c _old_fish_prompt fish_prompt
+        functions -e _old_fish_prompt
+        set -e _OLD_FISH_PROMPT_OVERRIDE
+    end
+
+    set -e VIRTUAL_ENV
+    set -e VIRTUAL_ENV_PROMPT
+
+    if test "$argv[1]" != 'nondestructive'
+        # Self-destruct!
+        functions -e pydoc
+        functions -e deactivate
+        functions -e _bashify_path
+        functions -e _fishify_path
+    end
+end
+
+# Unset irrelevant variables.
+deactivate nondestructive
+
+set -gx VIRTUAL_ENV '/home/hermes/projects/all_code/.venv'
+
+# https://github.com/fish-shell/fish-shell/issues/436 altered PATH handling
+if test (echo $FISH_VERSION | head -c 1) -lt 3
+    set -gx _OLD_VIRTUAL_PATH (_bashify_path $PATH)
+else
+    set -gx _OLD_VIRTUAL_PATH $PATH
+end
+set -gx PATH "$VIRTUAL_ENV"'/bin' $PATH
+
+# Prompt override provided?
+# If not, just use the environment name.
+if test -n 'all_code'
+    set -gx VIRTUAL_ENV_PROMPT 'all_code'
+else
+    set -gx VIRTUAL_ENV_PROMPT (basename "$VIRTUAL_ENV")
+end
+
+# Unset `$PYTHONHOME` if set.
+if set -q PYTHONHOME
+    set -gx _OLD_VIRTUAL_PYTHONHOME $PYTHONHOME
+    set -e PYTHONHOME
+end
+
+function pydoc
+    python -m pydoc $argv
+end
+
+if test -z "$VIRTUAL_ENV_DISABLE_PROMPT"
+    # Copy the current `fish_prompt` function as `_old_fish_prompt`.
+    functions -c fish_prompt _old_fish_prompt
+
+    function fish_prompt
+        # Run the user's prompt first; it might depend on (pipe)status.
+        set -l prompt (_old_fish_prompt)
+
+        printf '(%s) ' $VIRTUAL_ENV_PROMPT
+
+        string join -- \n $prompt # handle multi-line prompts
+    end
+
+    set -gx _OLD_FISH_PROMPT_OVERRIDE "$VIRTUAL_ENV"
+end
+
+
+# ======================
+# File: .venv/bin/activate.bat
+# ======================
+
+@REM Copyright (c) 2020-202x The virtualenv developers
+@REM
+@REM Permission is hereby granted, free of charge, to any person obtaining
+@REM a copy of this software and associated documentation files (the
+@REM "Software"), to deal in the Software without restriction, including
+@REM without limitation the rights to use, copy, modify, merge, publish,
+@REM distribute, sublicense, and/or sell copies of the Software, and to
+@REM permit persons to whom the Software is furnished to do so, subject to
+@REM the following conditions:
+@REM
+@REM The above copyright notice and this permission notice shall be
+@REM included in all copies or substantial portions of the Software.
+@REM
+@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+@REM EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+@REM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+@REM NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+@REM LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+@REM OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+@REM WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+@for %%i in ("/home/hermes/projects/all_code/.venv") do @set "VIRTUAL_ENV=%%~fi"
+
+@set "VIRTUAL_ENV_PROMPT=all_code"
+@if NOT DEFINED VIRTUAL_ENV_PROMPT (
+    @for %%d in ("%VIRTUAL_ENV%") do @set "VIRTUAL_ENV_PROMPT=%%~nxd"
+)
+
+@if defined _OLD_VIRTUAL_PROMPT (
+    @set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
+) else (
+    @if not defined PROMPT (
+        @set "PROMPT=$P$G"
+    )
+    @if not defined VIRTUAL_ENV_DISABLE_PROMPT (
+        @set "_OLD_VIRTUAL_PROMPT=%PROMPT%"
+    )
+)
+@if not defined VIRTUAL_ENV_DISABLE_PROMPT (
+    @set "PROMPT=(%VIRTUAL_ENV_PROMPT%) %PROMPT%"
+)
+
+@REM Don't use () to avoid problems with them in %PATH%
+@if defined _OLD_VIRTUAL_PYTHONHOME @goto ENDIFVHOME
+    @set "_OLD_VIRTUAL_PYTHONHOME=%PYTHONHOME%"
+:ENDIFVHOME
+
+@set PYTHONHOME=
+
+@REM if defined _OLD_VIRTUAL_PATH (
+@if not defined _OLD_VIRTUAL_PATH @goto ENDIFVPATH1
+    @set "PATH=%_OLD_VIRTUAL_PATH%"
+:ENDIFVPATH1
+@REM ) else (
+@if defined _OLD_VIRTUAL_PATH @goto ENDIFVPATH2
+    @set "_OLD_VIRTUAL_PATH=%PATH%"
+:ENDIFVPATH2
+
+@set "PATH=%VIRTUAL_ENV%\bin;%PATH%"
+
+
+# ======================
+# File: .venv/bin/activate_this.py
+# ======================
+
+# Copyright (c) 2020-202x The virtualenv developers
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
-Custom transformation utility functions (e.g., date parsing, column renaming).
-"""
+Activate virtualenv for current interpreter:
 
-def unify_schema(df, target_schema):
-    """
-    Apply transformations to match df columns to a target schema.
-    """
-    pass
+import runpy
+runpy.run_path(this_file)
 
+This can be used when you must use an existing Python interpreter, not the virtualenv bin/python.
+"""  # noqa: D415
 
+from __future__ import annotations
 
-# ======================
-# File: src/transformation/__init__.py
-# ======================
+import os
+import site
+import sys
 
-# src/transformation/__init__.py
-# Initialization for transformation module.
+try:
+    abs_file = os.path.abspath(__file__)
+except NameError as exc:
+    msg = "You must use import runpy; runpy.run_path(this_file)"
+    raise AssertionError(msg) from exc
 
+bin_dir = os.path.dirname(abs_file)
+base = bin_dir[: -len("bin") - 1]  # strip away the bin part from the __file__, plus the path separator
 
+# prepend bin to PATH (this file is inside the bin directory)
+os.environ["PATH"] = os.pathsep.join([bin_dir, *os.environ.get("PATH", "").split(os.pathsep)])
+os.environ["VIRTUAL_ENV"] = base  # virtual env is right above bin directory
+os.environ["VIRTUAL_ENV_PROMPT"] = "all_code" or os.path.basename(base)  # noqa: SIM222
 
-# ======================
-# File: src/transformation/transform_agent.py
-# ======================
+# add the virtual environments libraries to the host python import mechanism
+prev_length = len(sys.path)
+for lib in "../lib/python3.13/site-packages".split(os.pathsep):
+    path = os.path.realpath(os.path.join(bin_dir, lib))
+    site.addsitedir(path)
+sys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]
 
-"""
-LangChain agent for schema normalization and data transformation.
-"""
-
-def run_transform(df):
-    """
-    Analyze a DataFrame, create or apply transformations
-    to fit a common schema.
-    """
-    pass
-
-
-
-# ======================
-# File: src/persistence/__init__.py
-# ======================
-
-# src/persistence/__init__.py
-# Initialization for persistence module.
-
+sys.real_prefix = sys.prefix
+sys.prefix = base
 
 
 # ======================
-# File: src/persistence/data_lake.py
+# File: .venv/bin/deactivate.bat
 # ======================
 
-"""
-Utilities for storing data locally in a 'data lake' format (e.g. Parquet).
-"""
-
-def save_as_parquet(df, path):
-    """
-    Save the given DataFrame as a Parquet file at the specified path.
-    """
-    pass
-
-
-
-# ======================
-# File: src/persistence/postgres_writer.py
-# ======================
-
-"""
-Functions for writing DataFrames to a Docker-hosted Postgres database.
-"""
-
-def write_to_postgres(df, db_code, table_name):
-    """
-    Write the DataFrame to a Postgres table. The 'db_code' can identify
-    which database or schema to target.
-    """
-    pass
-
-
-
-# ======================
-# File: src/persistence/application/__init__.py
-# ======================
-
-
-
-# ======================
-# File: src/persistence/infrastructure/__init__.py
-# ======================
-
-
-
-# ======================
-# File: src/persistence/domain/measure.py
-# ======================
-
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
-from sqlalchemy.orm import relationship
-from config.db_base import Base
-from .dataset import DataSet 
-
-class Measure(Base):
-    __tablename__ = 'measures'
-
-    id = Column(Integer, primary_key=True, index=True)
-    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
-    name = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=True)
-    short_title = Column(String(100), nullable=True)
-    description = Column(Text, nullable=True)
-    type = Column(String(100), nullable=True)
-
-    dataset = relationship("DataSet", back_populates="measures")
-    data_entries = relationship("DataEntry", back_populates="measure")
-
-    def __repr__(self):
-        return f"<Measure(id={self.id}, name='{self.name}', dataset_id={self.dataset_id})>"
-
-
-# ======================
-# File: src/persistence/domain/dataentry.py
-# ======================
-
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from config.db_base import Base  # Import Base from db_base
-from .dataset import DataSet  # Ensure DataSet is imported
-
-
-class DataEntry(Base):
-    __tablename__ = 'data_entries'
-
-    id = Column(Integer, primary_key=True, index=True)
-    record_id = Column(Integer, ForeignKey('records.id'), nullable=False)
-    measure_id = Column(Integer, ForeignKey('measures.id'), nullable=True)
-    dimension_id = Column(Integer, ForeignKey('dimensions.id'), nullable=True)
-    time_dimension_id = Column(Integer, ForeignKey(
-        'time_dimensions.id'), nullable=True)
-    value = Column(String(255), nullable=False)
-
-    record = relationship("Record", back_populates="data_entries")
-    measure = relationship("Measure", back_populates="data_entries")
-    dimension = relationship("Dimension", back_populates="data_entries")
-    time_dimension = relationship(
-        "TimeDimension", back_populates="data_entries")
-
-    def __repr__(self):
-        return f"<DataEntry(id={self.id}, value='{self.value}', record_id={self.record_id})>"
-
-
-# ======================
-# File: src/persistence/domain/__init__.py
-# ======================
-
-from .dataentry import DataEntry
-from .dataset import DataSet
-from .dimension import Dimension
-from .measure import Measure
-from .record import Record
-from .source import Source
-from .timedimension import TimeDimension
-
-__all__ = [
-    "DataEntry",
-    "DataSet",
-    "Dimension",
-    "Measure",
-    "Record",
-    "Source",
-    "TimeDimension"
-]
-
-
-# ======================
-# File: src/persistence/domain/dataset.py
-# ======================
-
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from config.db_base import Base
-
-
-class DataSet(Base):
-    __tablename__ = 'datasets'
-
-    id = Column(Integer, primary_key=True, index=True)
-    source_id = Column(Integer, ForeignKey('sources.id'))
-    query = Column(JSONB, nullable=False)
-    annotations = Column(JSONB, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    source = relationship("Source", back_populates="datasets")
-    measures = relationship(
-        "Measure", back_populates="dataset", cascade="all, delete-orphan")
-    dimensions = relationship(
-        "Dimension", back_populates="dataset", cascade="all, delete-orphan")
-    time_dimensions = relationship(
-        "TimeDimension", back_populates="dataset", cascade="all, delete-orphan")
-    records = relationship(
-        "Record", back_populates="dataset", cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return f"<DataSet(id={self.id}, source_id={self.source_id})>"
-
-
-# ======================
-# File: src/persistence/domain/record.py
-# ======================
-
-from sqlalchemy import Column, Integer, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from config.db_base import Base
-from .dataset import DataSet  # Ensure DataSet is imported
-
-class Record(Base):
-    __tablename__ = 'records'
-
-    id = Column(Integer, primary_key=True, index=True)
-    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    dataset = relationship("DataSet", back_populates="records")
-    data_entries = relationship(
-        "DataEntry", back_populates="record", cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return f"<Record(id={self.id}, dataset_id={self.dataset_id}, created_at={self.created_at})>"
-
-
-# ======================
-# File: src/persistence/domain/source.py
-# ======================
-
-from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy.orm import relationship
-from config.db_base import Base
-from .dataset import DataSet  # Ensure DataSet is imported
-
-
-class Source(Base):
-    __tablename__ = 'sources'
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False, unique=True)
-    description = Column(Text, nullable=True)
-
-    datasets = relationship("DataSet", back_populates="source")
-
-    def __repr__(self):
-        return f"<Source(id={self.id}, name='{self.name}')>"
-
-
-# ======================
-# File: src/persistence/domain/dimension.py
-# ======================
-
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from config.db_base import Base
-
-
-class Dimension(Base):
-    __tablename__ = 'dimensions'
-
-    id = Column(Integer, primary_key=True, index=True)
-    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
-    name = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=True)
-    short_title = Column(String(100), nullable=True)
-    type = Column(String(100), nullable=True)
-
-    dataset = relationship("DataSet", back_populates="dimensions")
-    data_entries = relationship("DataEntry", back_populates="dimension")
-
-    def __repr__(self):
-        return f"<Dimension(id={self.id}, name='{self.name}', dataset_id={self.dataset_id})>"
-
-
-# ======================
-# File: src/persistence/domain/timedimension.py
-# ======================
-
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
-from sqlalchemy.orm import relationship
-from config.db_base import Base
-from .dataset import DataSet  # Ensure DataSet is imported
-
-
-class TimeDimension(Base):
-    __tablename__ = 'time_dimensions'
-
-    id = Column(Integer, primary_key=True, index=True)
-    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
-    name = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=True)
-    short_title = Column(String(100), nullable=True)
-    description = Column(Text, nullable=True)
-    type = Column(String(100), nullable=True)
-    granularity = Column(String(100), nullable=True)
-
-    dataset = relationship("DataSet", back_populates="time_dimensions")
-    data_entries = relationship("DataEntry", back_populates="time_dimension")
-
-    def __repr__(self):
-        return f"<TimeDimension(id={self.id}, name='{self.name}', granularity='{self.granularity}', dataset_id={self.dataset_id})>"
-
-
-# ======================
-# File: src/api/__init__.py
-# ======================
-
-
-
-# ======================
-# File: src/api/main.py
-# ======================
-
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to Clay: Capture, Load, Analyze, and Yield!"}
-
-@app.get("/status")
-def get_status():
-    return {"status": "Clay is running"}
-
-def init_api():
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@REM Copyright (c) 2020-202x The virtualenv developers
+@REM
+@REM Permission is hereby granted, free of charge, to any person obtaining
+@REM a copy of this software and associated documentation files (the
+@REM "Software"), to deal in the Software without restriction, including
+@REM without limitation the rights to use, copy, modify, merge, publish,
+@REM distribute, sublicense, and/or sell copies of the Software, and to
+@REM permit persons to whom the Software is furnished to do so, subject to
+@REM the following conditions:
+@REM
+@REM The above copyright notice and this permission notice shall be
+@REM included in all copies or substantial portions of the Software.
+@REM
+@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+@REM EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+@REM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+@REM NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+@REM LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+@REM OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+@REM WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+@set VIRTUAL_ENV=
+@set VIRTUAL_ENV_PROMPT=
+
+@REM Don't use () to avoid problems with them in %PATH%
+@if not defined _OLD_VIRTUAL_PROMPT @goto ENDIFVPROMPT
+    @set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
+    @set _OLD_VIRTUAL_PROMPT=
+:ENDIFVPROMPT
+
+@if not defined _OLD_VIRTUAL_PYTHONHOME @goto ENDIFVHOME
+    @set "PYTHONHOME=%_OLD_VIRTUAL_PYTHONHOME%"
+    @set _OLD_VIRTUAL_PYTHONHOME=
+:ENDIFVHOME
+
+@if not defined _OLD_VIRTUAL_PATH @goto ENDIFVPATH
+    @set "PATH=%_OLD_VIRTUAL_PATH%"
+    @set _OLD_VIRTUAL_PATH=
+:ENDIFVPATH

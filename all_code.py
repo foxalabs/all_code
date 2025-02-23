@@ -33,7 +33,7 @@ PROGRAMMING_EXTENSIONS = {
     # General Programming Languages
     '.py', '.java', '.c', '.cpp', '.h', '.hpp', '.cs', '.vb', '.r', 
     '.rb', '.go', '.php', '.swift', '.kt', '.rs', '.scala', '.pl', '.lua',
-    
+
     # Web Development
     '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss', '.less', '.sass',
 
@@ -163,6 +163,14 @@ def parse_arguments():
                         help="Copy the aggregated content to the clipboard instead of writing to a file.")
     parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
                         help="Specify the directory to start aggregation from. Defaults to the current working directory.")
+    parser.add_argument('-o', '--output-file', type=str, default=FULL_CODE_FILE_NAME,
+                        help="Name of the output file. Defaults to full_code.txt.")
+    parser.add_argument('-i', '--include-files', type=str, default="",
+                        help="Comma-separated list of files to include. If not provided, all files are included.")
+    parser.add_argument('-x', '--extensions', type=str, default="",
+                        help="Comma-separated list of programming extensions to use. Replaces the default set if provided.")
+    parser.add_argument('-e', '--exclude-dirs', type=str, default="",
+                        help="Comma-separated list of directories to exclude. Replaces the default set if provided.")
     return parser.parse_args()
 
 # TODO: Works on Macos. Needs Windows and Linux support
@@ -179,7 +187,27 @@ def copy_to_clipboard(content):
 def main():
     args = parse_arguments()
 
+    # Override the global options if command line arguments are provided.
+    global FULL_CODE_FILE_NAME, FILES_TO_INCLUDE, PROGRAMMING_EXTENSIONS, EXCLUDE_DIRS
+
+    if args.output_file:
+        FULL_CODE_FILE_NAME = args.output_file
+
+    if args.include_files:
+        # Split the comma-separated string and remove any extra whitespace.
+        FILES_TO_INCLUDE = {f.strip() for f in args.include_files.split(',') if f.strip()}
+
+    if args.extensions:
+        PROGRAMMING_EXTENSIONS = {ext.strip() for ext in args.extensions.split(',') if ext.strip()}
+
+    if args.exclude_dirs:
+        EXCLUDE_DIRS = {d.strip() for d in args.exclude_dirs.split(',') if d.strip()}
+
     startpath = args.directory
+
+    if not os.path.isdir(startpath):
+        print(f"Error: The specified directory '{startpath}' does not exist or is not a directory.")
+        sys.exit(1)
 
     if not os.path.isdir(startpath):
         print(f"Error: The specified directory '{
@@ -236,7 +264,7 @@ def main():
             except Exception as e:
                 error_msg = f"\n# Error reading file {rel_file_path}: {e}\n"
                 aggregated_content += error_msg
-                
+
     if args.clipboard:
         # Copy the aggregated content to the clipboard
         success = copy_to_clipboard(aggregated_content)
