@@ -210,8 +210,7 @@ def main():
         sys.exit(1)
 
     if not os.path.isdir(startpath):
-        print(f"Error: The specified directory '{
-              startpath}' does not exist or is not a directory.")
+        print(f"Error: The specified directory '{startpath}' does not exist or is not a directory.")
         sys.exit(1)
 
     # Generate directory tree
