@@ -252,8 +252,7 @@ def main():
             if should_exclude(rel_file_path) or not should_include_file(file_path):
                 continue  # Skip excluded files or those not in FILES_TO_INCLUDE
 
-            header = f"\n\n# ======================\n# File: {
-                rel_file_path}\n# ======================\n\n"
+            header = f"\n\n# ======================\n# File: {rel_file_path}\n# ======================\n\n"
             aggregated_content += header
 
             try:
@@ -277,8 +276,7 @@ def main():
         try:
             with open(FULL_CODE_FILE_NAME, 'w', encoding='utf-8') as master_file:
                 master_file.write(aggregated_content)
-            print(f"Full code file '{
-                  FULL_CODE_FILE_NAME}' has been created successfully.")
+            print(f"Full code file '{FULL_CODE_FILE_NAME}' has been created successfully.")
         except Exception as e:
             print(f"Error writing to file '{FULL_CODE_FILE_NAME}': {e}")
             sys.exit(1)
