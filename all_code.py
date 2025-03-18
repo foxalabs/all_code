@@ -191,7 +191,7 @@ def main():
     args = parse_arguments()
 
     # Override the global options if command line arguments are provided.
-    global FULL_CODE_FILE_NAME, FILES_TO_INCLUDE, PROGRAMMING_EXTENSIONS, EXCLUDE_DIRS
+    global FULL_CODE_FILE_NAME, FILES_TO_INCLUDE, PROGRAMMING_EXTENSIONS, EXCLUDE_DIRS, EXCLUDE_EXTENSIONS
 
     if args.output_file:
         FULL_CODE_FILE_NAME = args.output_file
