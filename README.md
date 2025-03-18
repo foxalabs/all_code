@@ -35,6 +35,15 @@ python all_code.py -c
 python all_code.py -d /path/to/start/directory -c
 ```
 
+**Exclude Specific File Extensions**
+```bash
+python all_code.py -X .json,.md,.html
+```
+**Combine Multiple Options: Specify Directory, Copy to Clipboard, and Exclude Extensions**
+```bash
+python all_code.py -d /path/to/start/directory -c -X .json,.md,.html
+```
+
 **More options**
 ```bash
 python all_code.py --help
@@ -55,6 +64,8 @@ options:
                         Comma-separated list of programming extensions to use. Replaces the default set if provided.
   -e, --exclude-dirs EXCLUDE_DIRS
                         Comma-separated list of directories to exclude. Replaces the default set if provided.
+  -X, --exclude-extensions EXCLUDE_EXTENSIONS
+                        Comma-separated list of file extensions to exclude from aggregation.
 ```
 
 ## Exclusions
@@ -74,6 +85,16 @@ The following directories are excluded by default:
 - `temp`
 - `old_files`
 - `flask_session`
+
+### Excluded Extensions
+
+Users can now exclude specific file extensions using the `-X` or `--exclude-extensions` argument.
+
+**Example:**
+```bash
+python all_code.py -X .json,.md,.html
+```
+This will exclude all .json, .md, and .html files from aggregation.
 
 **Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
 

@@ -22,6 +22,7 @@ import subprocess
 FULL_CODE_FILE_NAME = "full_code.txt"
 
 FILES_TO_INCLUDE = {}  # if empty, include all files
+EXCLUDE_EXTENSIONS = set()  # User-defined extensions to exclude
 
 # FILES_TO_INCLUDE = {
 #     'some_file.py',
@@ -32,7 +33,7 @@ FILES_TO_INCLUDE = {}  # if empty, include all files
 PROGRAMMING_EXTENSIONS = {
     # General Programming Languages
     '.py', '.java', '.c', '.cpp', '.h', '.hpp', '.cs', '.vb', '.r', 
-    '.rb', '.go', '.php', '.swift', '.kt', '.rs', '.scala', '.pl', '.lua',
+    '.rb', '.go', '.php', '.swift', '.kt', '.rs', '.scala', '.pl', '.lua', '.jl'
 
     # Web Development
     '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss', '.less', '.sass',
@@ -115,10 +116,11 @@ def generate_directory_tree(startpath):
 
 
 def is_programming_file(filename):
-
-    # Checks if the file has a programming-related extension.
+    """Checks if a file has a programming-related extension and is not in the exclude list."""
     _, ext = os.path.splitext(filename)
-    return ext.lower() in PROGRAMMING_EXTENSIONS
+    ext = ext.lower()
+    return ext in PROGRAMMING_EXTENSIONS and ext not in EXCLUDE_EXTENSIONS
+
 
 
 def should_exclude(path):
@@ -171,13 +173,14 @@ def parse_arguments():
                         help="Comma-separated list of programming extensions to use. Replaces the default set if provided.")
     parser.add_argument('-e', '--exclude-dirs', type=str, default="",
                         help="Comma-separated list of directories to exclude. Replaces the default set if provided.")
+    parser.add_argument('-X', '--exclude-extensions', type=str, default="",
+                    help="Comma-separated list of file extensions to exclude.")
     return parser.parse_args()
 
 # TODO: Works on Macos. Needs Windows and Linux support
 def copy_to_clipboard(content):
     try:
-        process = subprocess.Popen('pbcopy', env={'LANG': 'en_US.UTF-8'}, 
-                                   stdin=subprocess.PIPE)
+        process = subprocess.Popen('pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=subprocess.PIPE)
         process.communicate(content.encode('utf-8'))
         return True
     except Exception as e:
@@ -202,7 +205,13 @@ def main():
 
     if args.exclude_dirs:
         EXCLUDE_DIRS = {d.strip() for d in args.exclude_dirs.split(',') if d.strip()}
+        
+    if args.exclude_extensions:
+        EXCLUDE_EXTENSIONS = {ext.strip() for ext in args.exclude_extensions.split(',') if ext.strip()}
 
+
+    # Debugging print statement to verify exclusions
+    print(f"Excluding extensions: {EXCLUDE_EXTENSIONS}")
     startpath = args.directory
 
     if not os.path.isdir(startpath):
@@ -242,10 +251,20 @@ def main():
             continue
 
         for file in files:
-            if not is_programming_file(file):
-                continue  # Skip non-programming files
-
+            
             file_path = os.path.join(root, file)
+            
+            # Get file extension
+            _, ext = os.path.splitext(file)
+            ext = ext.lower()
+
+            # Skip files with excluded extensions
+            if ext in EXCLUDE_EXTENSIONS:
+                continue  
+
+            # Skip non-programming files
+            if not is_programming_file(file):
+                continue 
             # Get relative path for exclusion and headers
             rel_file_path = os.path.relpath(file_path, startpath)
 
