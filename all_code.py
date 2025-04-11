@@ -14,8 +14,6 @@
 import os
 import argparse
 import sys
-import tkinter as tk
-import tkinter.messagebox as messagebox
 import subprocess
 
 # Define the master file name
