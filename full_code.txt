@@ -1,32 +1,13 @@
 Directory Tree:
 all_code/
 │   ├── README.md
+│   ├── pyproject.toml
 │   ├── full_code.txt
+│   ├── .gitignore
+│   ├── .README.md.swp
 │   ├── test_all_code.py
 │   ├── .git/ [EXCLUDED]
-│   ├── .venv/
-│   │   ├── pyvenv.cfg
-│   │   ├── CACHEDIR.TAG
-│   │   ├── .gitignore
-│   │   ├── lib/
-│   │   │   ├── python3.13/
-│   │   │   │   ├── site-packages/
-│   │   │   │   │   ├── _virtualenv.pth
-│   │   │   │   │   ├── _virtualenv.py
-│   │   │   │   │   ├── __pycache__/ [EXCLUDED]
-│   │   ├── bin/
-│   │   │   ├── activate.ps1
-│   │   │   ├── activate.csh
-│   │   │   ├── python
-│   │   │   ├── pydoc.bat
-│   │   │   ├── activate.fish
-│   │   │   ├── activate.bat
-│   │   │   ├── python3
-│   │   │   ├── activate_this.py
-│   │   │   ├── deactivate.bat
-│   │   │   ├── activate.nu
-│   │   │   ├── activate
-│   │   │   ├── python3.13
+│   ├── .venv/ [EXCLUDED]
 
 
 
@@ -49,27 +30,73 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 
 ## Setup
 
-1. **Clone the Repository**
+1. **From Github**
+
+```shell
+pip install git+https://github.com/foxalabs/all_code@0.3.0
+```
+
+2. **From local directory**
+
+To install from a local directory, use edit mode so your code changes are reflected immediately. This is useful for development/debugging mode.
+```shell
+git clone https://github.com/foxalabs/all_code.git
+cd all_code
+pip install -e .
+```
 
 ## Usage
 **Basic usage**
 ```bash
-python all_code.py
+all-code
 ```
 
 **Specify a Directory**
 ```bash
-python all_code.py -d /path/to/start/directory
+all-code -d /path/to/start/directory
 ```
 
 **Copy Aggregated Content to Clipboard Instead of Writing to File**
 ```bash
-python all_code.py -c
+all-code -c
 ```
 
 **Combine Both Arguments: Specify Directory and Copy to Clipboard**
 ```bash
-python all_code.py -d /path/to/start/directory -c
+all-code -d /path/to/start/directory -c
+```
+
+**Exclude Specific File Extensions**
+```bash
+all-code -X .json,.md,.html
+```
+**Combine Multiple Options: Specify Directory, Copy to Clipboard, and Exclude Extensions**
+```bash
+all-code -d /path/to/start/directory -c -X .json,.md,.html
+```
+
+**More options**
+```bash
+all-code --help
+usage: all_code.py [-h] [-c] [-d DIRECTORY] [-o OUTPUT_FILE] [-i INCLUDE_FILES] [-x EXTENSIONS] [-e EXCLUDE_DIRS]
+
+Aggregate code files into a master file with a directory tree.
+
+options:
+  -h, --help            show this help message and exit
+  -c, --clipboard       Copy the aggregated content to the clipboard instead of writing to a file.
+  -d, --directory DIRECTORY
+                        Specify the directory to start aggregation from. Defaults to the current working directory.
+  -o, --output-file OUTPUT_FILE
+                        Name of the output file. Defaults to full_code.txt.
+  -i, --include-files INCLUDE_FILES
+                        Comma-separated list of files to include. If not provided, all files are included.
+  -x, --extensions EXTENSIONS
+                        Comma-separated list of programming extensions to use. Replaces the default set if provided.
+  -e, --exclude-dirs EXCLUDE_DIRS
+                        Comma-separated list of directories to exclude. Replaces the default set if provided.
+  -X, --exclude-extensions EXCLUDE_EXTENSIONS
+                        Comma-separated list of file extensions to exclude from aggregation.
 ```
 
 ## Exclusions
@@ -80,7 +107,8 @@ The **All Code Aggregator** script automatically excludes specific directories a
 
 The following directories are excluded by default:
 
-- `venv`z
+- `venv`
+- `.venv`
 - `node_modules`
 - `__pycache__`
 - `.git`
@@ -92,7 +120,17 @@ The following directories are excluded by default:
 
 **Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
 
-**Example Output to full_code.txt**
+### Excluded Extensions
+
+Users can now exclude specific file extensions using the `-X` or `--exclude-extensions` argument.
+
+**Example:**
+```bash
+all-code -X .json,.md,.html
+```
+This will exclude all .json, .md, and .html files from aggregation.
+
+## Example Output to full_code.txt
 ```
 Directory Tree:
 all_code/
@@ -155,6 +193,50 @@ console.log("Subtract: " + subtract(5, 3)); // Output: Subtract: 2
 console.log("Multiply: " + multiply(5, 3)); // Output: Multiply: 15
 console.log("Divide: " + divide(5, 3));     // Output: Divide: 1.6666666666666667
 ```
+
+
+## Testing the script
+
+If you want to test the script, run the following command.
+
+```bash
+python test_all_code.py
+```
+
+As of the current commit, only the command line args and their effects were tested, but more tests can be added in the future.
+
+
+# ======================
+# File: pyproject.toml
+# ======================
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "all-code"
+version = "0.3.0"
+description = "Aggregate code files into a single file with a directory tree."
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "MIT" }
+authors = [
+  { name = "Spencer Bentley" }
+]
+dependencies = []
+
+[project.scripts]
+all-code = "all_code:main"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "all_code.py",
+  "README.md"
+]
+
+[tool.hatch.build.targets.wheel]
+
 
 
 # ======================
@@ -321,530 +403,3 @@ if __name__ == "__main__":
     test_extensions()
     test_exclude_dirs()
     print("All tests passed!")
-
-
-# ======================
-# File: .venv/lib/python3.13/site-packages/_virtualenv.py
-# ======================
-
-"""Patches that are applied at runtime to the virtual environment."""
-
-import os
-import sys
-
-VIRTUALENV_PATCH_FILE = os.path.join(__file__)
-
-
-def patch_dist(dist):
-    """
-    Distutils allows user to configure some arguments via a configuration file:
-    https://docs.python.org/3.11/install/index.html#distutils-configuration-files.
-
-    Some of this arguments though don't make sense in context of the virtual environment files, let's fix them up.
-    """  # noqa: D205
-    # we cannot allow some install config as that would get packages installed outside of the virtual environment
-    old_parse_config_files = dist.Distribution.parse_config_files
-
-    def parse_config_files(self, *args, **kwargs):
-        result = old_parse_config_files(self, *args, **kwargs)
-        install = self.get_option_dict("install")
-
-        if "prefix" in install:  # the prefix governs where to install the libraries
-            install["prefix"] = VIRTUALENV_PATCH_FILE, os.path.abspath(sys.prefix)
-        for base in ("purelib", "platlib", "headers", "scripts", "data"):
-            key = f"install_{base}"
-            if key in install:  # do not allow global configs to hijack venv paths
-                install.pop(key, None)
-        return result
-
-    dist.Distribution.parse_config_files = parse_config_files
-
-
-# Import hook that patches some modules to ignore configuration values that break package installation in case
-# of virtual environments.
-_DISTUTILS_PATCH = "distutils.dist", "setuptools.dist"
-# https://docs.python.org/3/library/importlib.html#setting-up-an-importer
-
-
-class _Finder:
-    """A meta path finder that allows patching the imported distutils modules."""
-
-    fullname = None
-
-    # lock[0] is threading.Lock(), but initialized lazily to avoid importing threading very early at startup,
-    # because there are gevent-based applications that need to be first to import threading by themselves.
-    # See https://github.com/pypa/virtualenv/issues/1895 for details.
-    lock = []  # noqa: RUF012
-
-    def find_spec(self, fullname, path, target=None):  # noqa: ARG002
-        if fullname in _DISTUTILS_PATCH and self.fullname is None:
-            # initialize lock[0] lazily
-            if len(self.lock) == 0:
-                import threading
-
-                lock = threading.Lock()
-                # there is possibility that two threads T1 and T2 are simultaneously running into find_spec,
-                # observing .lock as empty, and further going into hereby initialization. However due to the GIL,
-                # list.append() operation is atomic and this way only one of the threads will "win" to put the lock
-                # - that every thread will use - into .lock[0].
-                # https://docs.python.org/3/faq/library.html#what-kinds-of-global-value-mutation-are-thread-safe
-                self.lock.append(lock)
-
-            from functools import partial
-            from importlib.util import find_spec
-
-            with self.lock[0]:
-                self.fullname = fullname
-                try:
-                    spec = find_spec(fullname, path)
-                    if spec is not None:
-                        # https://www.python.org/dev/peps/pep-0451/#how-loading-will-work
-                        is_new_api = hasattr(spec.loader, "exec_module")
-                        func_name = "exec_module" if is_new_api else "load_module"
-                        old = getattr(spec.loader, func_name)
-                        func = self.exec_module if is_new_api else self.load_module
-                        if old is not func:
-                            try:  # noqa: SIM105
-                                setattr(spec.loader, func_name, partial(func, old))
-                            except AttributeError:
-                                pass  # C-Extension loaders are r/o such as zipimporter with <3.7
-                        return spec
-                finally:
-                    self.fullname = None
-        return None
-
-    @staticmethod
-    def exec_module(old, module):
-        old(module)
-        if module.__name__ in _DISTUTILS_PATCH:
-            patch_dist(module)
-
-    @staticmethod
-    def load_module(old, name):
-        module = old(name)
-        if module.__name__ in _DISTUTILS_PATCH:
-            patch_dist(module)
-        return module
-
-
-sys.meta_path.insert(0, _Finder())
-
-
-# ======================
-# File: .venv/bin/activate.ps1
-# ======================
-
-# Copyright (c) 2020-202x The virtualenv developers
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-$script:THIS_PATH = $myinvocation.mycommand.path
-$script:BASE_DIR = Split-Path (Resolve-Path "$THIS_PATH/..") -Parent
-
-function global:deactivate([switch] $NonDestructive) {
-    if (Test-Path variable:_OLD_VIRTUAL_PATH) {
-        $env:PATH = $variable:_OLD_VIRTUAL_PATH
-        Remove-Variable "_OLD_VIRTUAL_PATH" -Scope global
-    }
-
-    if (Test-Path function:_old_virtual_prompt) {
-        $function:prompt = $function:_old_virtual_prompt
-        Remove-Item function:\_old_virtual_prompt
-    }
-
-    if ($env:VIRTUAL_ENV) {
-        Remove-Item env:VIRTUAL_ENV -ErrorAction SilentlyContinue
-    }
-
-    if ($env:VIRTUAL_ENV_PROMPT) {
-        Remove-Item env:VIRTUAL_ENV_PROMPT -ErrorAction SilentlyContinue
-    }
-
-    if (!$NonDestructive) {
-        # Self destruct!
-        Remove-Item function:deactivate
-        Remove-Item function:pydoc
-    }
-}
-
-function global:pydoc {
-    python -m pydoc $args
-}
-
-# unset irrelevant variables
-deactivate -nondestructive
-
-$VIRTUAL_ENV = $BASE_DIR
-$env:VIRTUAL_ENV = $VIRTUAL_ENV
-
-if ("all_code" -ne "") {
-    $env:VIRTUAL_ENV_PROMPT = "all_code"
-}
-else {
-    $env:VIRTUAL_ENV_PROMPT = $( Split-Path $env:VIRTUAL_ENV -Leaf )
-}
-
-New-Variable -Scope global -Name _OLD_VIRTUAL_PATH -Value $env:PATH
-
-$env:PATH = "$env:VIRTUAL_ENV/bin:" + $env:PATH
-if (!$env:VIRTUAL_ENV_DISABLE_PROMPT) {
-    function global:_old_virtual_prompt {
-        ""
-    }
-    $function:_old_virtual_prompt = $function:prompt
-
-    function global:prompt {
-        # Add the custom prefix to the existing prompt
-        $previous_prompt_value = & $function:_old_virtual_prompt
-        ("(" + $env:VIRTUAL_ENV_PROMPT + ") " + $previous_prompt_value)
-    }
-}
-
-
-# ======================
-# File: .venv/bin/pydoc.bat
-# ======================
-
-@REM Copyright (c) 2020-202x The virtualenv developers
-@REM
-@REM Permission is hereby granted, free of charge, to any person obtaining
-@REM a copy of this software and associated documentation files (the
-@REM "Software"), to deal in the Software without restriction, including
-@REM without limitation the rights to use, copy, modify, merge, publish,
-@REM distribute, sublicense, and/or sell copies of the Software, and to
-@REM permit persons to whom the Software is furnished to do so, subject to
-@REM the following conditions:
-@REM
-@REM The above copyright notice and this permission notice shall be
-@REM included in all copies or substantial portions of the Software.
-@REM
-@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-@REM EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-@REM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-@REM NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-@REM LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-@REM OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-@REM WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-python.exe -m pydoc %*
-
-# ======================
-# File: .venv/bin/activate.fish
-# ======================
-
-# Copyright (c) 2020-202x The virtualenv developers
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-# This file must be used using `source bin/activate.fish` *within a running fish ( http://fishshell.com ) session*.
-# Do not run it directly.
-
-function _bashify_path -d "Converts a fish path to something bash can recognize"
-    set fishy_path $argv
-    set bashy_path $fishy_path[1]
-    for path_part in $fishy_path[2..-1]
-        set bashy_path "$bashy_path:$path_part"
-    end
-    echo $bashy_path
-end
-
-function _fishify_path -d "Converts a bash path to something fish can recognize"
-    echo $argv | tr ':' '\n'
-end
-
-function deactivate -d 'Exit virtualenv mode and return to the normal environment.'
-    # reset old environment variables
-    if test -n "$_OLD_VIRTUAL_PATH"
-        # https://github.com/fish-shell/fish-shell/issues/436 altered PATH handling
-        if test (echo $FISH_VERSION | head -c 1) -lt 3
-            set -gx PATH (_fishify_path "$_OLD_VIRTUAL_PATH")
-        else
-            set -gx PATH $_OLD_VIRTUAL_PATH
-        end
-        set -e _OLD_VIRTUAL_PATH
-    end
-
-    if test -n "$_OLD_VIRTUAL_PYTHONHOME"
-        set -gx PYTHONHOME "$_OLD_VIRTUAL_PYTHONHOME"
-        set -e _OLD_VIRTUAL_PYTHONHOME
-    end
-
-    if test -n "$_OLD_FISH_PROMPT_OVERRIDE"
-       and functions -q _old_fish_prompt
-        # Set an empty local `$fish_function_path` to allow the removal of `fish_prompt` using `functions -e`.
-        set -l fish_function_path
-
-        # Erase virtualenv's `fish_prompt` and restore the original.
-        functions -e fish_prompt
-        functions -c _old_fish_prompt fish_prompt
-        functions -e _old_fish_prompt
-        set -e _OLD_FISH_PROMPT_OVERRIDE
-    end
-
-    set -e VIRTUAL_ENV
-    set -e VIRTUAL_ENV_PROMPT
-
-    if test "$argv[1]" != 'nondestructive'
-        # Self-destruct!
-        functions -e pydoc
-        functions -e deactivate
-        functions -e _bashify_path
-        functions -e _fishify_path
-    end
-end
-
-# Unset irrelevant variables.
-deactivate nondestructive
-
-set -gx VIRTUAL_ENV '/home/hermes/projects/all_code/.venv'
-
-# https://github.com/fish-shell/fish-shell/issues/436 altered PATH handling
-if test (echo $FISH_VERSION | head -c 1) -lt 3
-    set -gx _OLD_VIRTUAL_PATH (_bashify_path $PATH)
-else
-    set -gx _OLD_VIRTUAL_PATH $PATH
-end
-set -gx PATH "$VIRTUAL_ENV"'/bin' $PATH
-
-# Prompt override provided?
-# If not, just use the environment name.
-if test -n 'all_code'
-    set -gx VIRTUAL_ENV_PROMPT 'all_code'
-else
-    set -gx VIRTUAL_ENV_PROMPT (basename "$VIRTUAL_ENV")
-end
-
-# Unset `$PYTHONHOME` if set.
-if set -q PYTHONHOME
-    set -gx _OLD_VIRTUAL_PYTHONHOME $PYTHONHOME
-    set -e PYTHONHOME
-end
-
-function pydoc
-    python -m pydoc $argv
-end
-
-if test -z "$VIRTUAL_ENV_DISABLE_PROMPT"
-    # Copy the current `fish_prompt` function as `_old_fish_prompt`.
-    functions -c fish_prompt _old_fish_prompt
-
-    function fish_prompt
-        # Run the user's prompt first; it might depend on (pipe)status.
-        set -l prompt (_old_fish_prompt)
-
-        printf '(%s) ' $VIRTUAL_ENV_PROMPT
-
-        string join -- \n $prompt # handle multi-line prompts
-    end
-
-    set -gx _OLD_FISH_PROMPT_OVERRIDE "$VIRTUAL_ENV"
-end
-
-
-# ======================
-# File: .venv/bin/activate.bat
-# ======================
-
-@REM Copyright (c) 2020-202x The virtualenv developers
-@REM
-@REM Permission is hereby granted, free of charge, to any person obtaining
-@REM a copy of this software and associated documentation files (the
-@REM "Software"), to deal in the Software without restriction, including
-@REM without limitation the rights to use, copy, modify, merge, publish,
-@REM distribute, sublicense, and/or sell copies of the Software, and to
-@REM permit persons to whom the Software is furnished to do so, subject to
-@REM the following conditions:
-@REM
-@REM The above copyright notice and this permission notice shall be
-@REM included in all copies or substantial portions of the Software.
-@REM
-@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-@REM EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-@REM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-@REM NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-@REM LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-@REM OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-@REM WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-@for %%i in ("/home/hermes/projects/all_code/.venv") do @set "VIRTUAL_ENV=%%~fi"
-
-@set "VIRTUAL_ENV_PROMPT=all_code"
-@if NOT DEFINED VIRTUAL_ENV_PROMPT (
-    @for %%d in ("%VIRTUAL_ENV%") do @set "VIRTUAL_ENV_PROMPT=%%~nxd"
-)
-
-@if defined _OLD_VIRTUAL_PROMPT (
-    @set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
-) else (
-    @if not defined PROMPT (
-        @set "PROMPT=$P$G"
-    )
-    @if not defined VIRTUAL_ENV_DISABLE_PROMPT (
-        @set "_OLD_VIRTUAL_PROMPT=%PROMPT%"
-    )
-)
-@if not defined VIRTUAL_ENV_DISABLE_PROMPT (
-    @set "PROMPT=(%VIRTUAL_ENV_PROMPT%) %PROMPT%"
-)
-
-@REM Don't use () to avoid problems with them in %PATH%
-@if defined _OLD_VIRTUAL_PYTHONHOME @goto ENDIFVHOME
-    @set "_OLD_VIRTUAL_PYTHONHOME=%PYTHONHOME%"
-:ENDIFVHOME
-
-@set PYTHONHOME=
-
-@REM if defined _OLD_VIRTUAL_PATH (
-@if not defined _OLD_VIRTUAL_PATH @goto ENDIFVPATH1
-    @set "PATH=%_OLD_VIRTUAL_PATH%"
-:ENDIFVPATH1
-@REM ) else (
-@if defined _OLD_VIRTUAL_PATH @goto ENDIFVPATH2
-    @set "_OLD_VIRTUAL_PATH=%PATH%"
-:ENDIFVPATH2
-
-@set "PATH=%VIRTUAL_ENV%\bin;%PATH%"
-
-
-# ======================
-# File: .venv/bin/activate_this.py
-# ======================
-
-# Copyright (c) 2020-202x The virtualenv developers
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-"""
-Activate virtualenv for current interpreter:
-
-import runpy
-runpy.run_path(this_file)
-
-This can be used when you must use an existing Python interpreter, not the virtualenv bin/python.
-"""  # noqa: D415
-
-from __future__ import annotations
-
-import os
-import site
-import sys
-
-try:
-    abs_file = os.path.abspath(__file__)
-except NameError as exc:
-    msg = "You must use import runpy; runpy.run_path(this_file)"
-    raise AssertionError(msg) from exc
-
-bin_dir = os.path.dirname(abs_file)
-base = bin_dir[: -len("bin") - 1]  # strip away the bin part from the __file__, plus the path separator
-
-# prepend bin to PATH (this file is inside the bin directory)
-os.environ["PATH"] = os.pathsep.join([bin_dir, *os.environ.get("PATH", "").split(os.pathsep)])
-os.environ["VIRTUAL_ENV"] = base  # virtual env is right above bin directory
-os.environ["VIRTUAL_ENV_PROMPT"] = "all_code" or os.path.basename(base)  # noqa: SIM222
-
-# add the virtual environments libraries to the host python import mechanism
-prev_length = len(sys.path)
-for lib in "../lib/python3.13/site-packages".split(os.pathsep):
-    path = os.path.realpath(os.path.join(bin_dir, lib))
-    site.addsitedir(path)
-sys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]
-
-sys.real_prefix = sys.prefix
-sys.prefix = base
-
-
-# ======================
-# File: .venv/bin/deactivate.bat
-# ======================
-
-@REM Copyright (c) 2020-202x The virtualenv developers
-@REM
-@REM Permission is hereby granted, free of charge, to any person obtaining
-@REM a copy of this software and associated documentation files (the
-@REM "Software"), to deal in the Software without restriction, including
-@REM without limitation the rights to use, copy, modify, merge, publish,
-@REM distribute, sublicense, and/or sell copies of the Software, and to
-@REM permit persons to whom the Software is furnished to do so, subject to
-@REM the following conditions:
-@REM
-@REM The above copyright notice and this permission notice shall be
-@REM included in all copies or substantial portions of the Software.
-@REM
-@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-@REM EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-@REM MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-@REM NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-@REM LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-@REM OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-@REM WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-@set VIRTUAL_ENV=
-@set VIRTUAL_ENV_PROMPT=
-
-@REM Don't use () to avoid problems with them in %PATH%
-@if not defined _OLD_VIRTUAL_PROMPT @goto ENDIFVPROMPT
-    @set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
-    @set _OLD_VIRTUAL_PROMPT=
-:ENDIFVPROMPT
-
-@if not defined _OLD_VIRTUAL_PYTHONHOME @goto ENDIFVHOME
-    @set "PYTHONHOME=%_OLD_VIRTUAL_PYTHONHOME%"
-    @set _OLD_VIRTUAL_PYTHONHOME=
-:ENDIFVHOME
-
-@if not defined _OLD_VIRTUAL_PATH @goto ENDIFVPATH
-    @set "PATH=%_OLD_VIRTUAL_PATH%"
-    @set _OLD_VIRTUAL_PATH=
-:ENDIFVPATH

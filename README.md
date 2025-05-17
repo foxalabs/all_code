@@ -12,41 +12,54 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 
 ## Setup
 
-1. **Clone the Repository**
+1. **From Github**
+
+```shell
+pip install git+https://github.com/foxalabs/all_code@0.3.0
+```
+
+2. **From local directory**
+
+To install from a local directory, use edit mode so your code changes are reflected immediately. This is useful for development/debugging mode.
+```shell
+git clone https://github.com/foxalabs/all_code.git
+cd all_code
+pip install -e .
+```
 
 ## Usage
 **Basic usage**
 ```bash
-python all_code.py
+all-code
 ```
 
 **Specify a Directory**
 ```bash
-python all_code.py -d /path/to/start/directory
+all-code -d /path/to/start/directory
 ```
 
 **Copy Aggregated Content to Clipboard Instead of Writing to File**
 ```bash
-python all_code.py -c
+all-code -c
 ```
 
 **Combine Both Arguments: Specify Directory and Copy to Clipboard**
 ```bash
-python all_code.py -d /path/to/start/directory -c
+all-code -d /path/to/start/directory -c
 ```
 
 **Exclude Specific File Extensions**
 ```bash
-python all_code.py -X .json,.md,.html
+all-code -X .json,.md,.html
 ```
 **Combine Multiple Options: Specify Directory, Copy to Clipboard, and Exclude Extensions**
 ```bash
-python all_code.py -d /path/to/start/directory -c -X .json,.md,.html
+all-code -d /path/to/start/directory -c -X .json,.md,.html
 ```
 
 **More options**
 ```bash
-python all_code.py --help
+all-code --help
 usage: all_code.py [-h] [-c] [-d DIRECTORY] [-o OUTPUT_FILE] [-i INCLUDE_FILES] [-x EXTENSIONS] [-e EXCLUDE_DIRS]
 
 Aggregate code files into a master file with a directory tree.
@@ -76,7 +89,8 @@ The **All Code Aggregator** script automatically excludes specific directories a
 
 The following directories are excluded by default:
 
-- `venv`z
+- `venv`
+- `.venv`
 - `node_modules`
 - `__pycache__`
 - `.git`
@@ -86,19 +100,19 @@ The following directories are excluded by default:
 - `old_files`
 - `flask_session`
 
+**Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
+
 ### Excluded Extensions
 
 Users can now exclude specific file extensions using the `-X` or `--exclude-extensions` argument.
 
 **Example:**
 ```bash
-python all_code.py -X .json,.md,.html
+all-code -X .json,.md,.html
 ```
 This will exclude all .json, .md, and .html files from aggregation.
 
-**Purpose**: These directories are typically used for virtual environments, dependencies, build artifacts, version control, or temporary files that are not part of the core codebase.
-
-**Example Output to full_code.txt**
+## Example Output to full_code.txt
 ```
 Directory Tree:
 all_code/
