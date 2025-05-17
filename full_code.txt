@@ -4,10 +4,10 @@ all_code/
 │   ├── pyproject.toml
 │   ├── full_code.txt
 │   ├── .gitignore
-│   ├── .README.md.swp
 │   ├── test_all_code.py
 │   ├── .git/ [EXCLUDED]
 │   ├── .venv/ [EXCLUDED]
+│   ├── __pycache__/ [EXCLUDED]
 
 
 
