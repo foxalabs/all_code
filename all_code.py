@@ -55,6 +55,7 @@ PROGRAMMING_EXTENSIONS = {
 # Define directories to exclude during file aggregation and directory tree generation
 EXCLUDE_DIRS = {
     'venv',
+    '.venv',
     'node_modules',
     '__pycache__',
     '.git',
