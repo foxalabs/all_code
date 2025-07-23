@@ -9,13 +9,14 @@ The **All Code Aggregator** script consolidates all programming-related code fil
 - **Directory Tree Generation**: Creates an ASCII representation of the directory structure, excluding specified directories.
 - **Code Aggregation**: Combines contents of programming-related files into a master file.
 - **Customizable Inclusions/Exclusions**: Easily specify which files or directories to include or exclude.
+- **Clipboard Output**: Use `-c` to copy the results directly to your clipboard on macOS and Windows 10+.
 
 ## Setup
 
 1. **From Github**
 
 ```shell
-pip install git+https://github.com/foxalabs/all_code@0.3.0
+pip install git+https://github.com/foxalabs/all_code@0.4.0
 ```
 
 2. **From local directory**
@@ -38,7 +39,7 @@ all-code
 all-code -d /path/to/start/directory
 ```
 
-**Copy Aggregated Content to Clipboard Instead of Writing to File**
+**Copy Aggregated Content to Clipboard Instead of Writing to File** (macOS and Windows 10+)
 ```bash
 all-code -c
 ```

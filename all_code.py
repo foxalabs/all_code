@@ -176,12 +176,23 @@ def parse_arguments():
                     help="Comma-separated list of file extensions to exclude.")
     return parser.parse_args()
 
-# TODO: Works on Macos. Needs Windows and Linux support
+# TODO: Works on MacOS and Windows 10+. Linux support can be added later
 def copy_to_clipboard(content):
+    """Copy text to the system clipboard on macOS and Windows."""
     try:
-        process = subprocess.Popen('pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=subprocess.PIPE)
-        process.communicate(content.encode('utf-8'))
-        return True
+        if sys.platform == 'darwin':
+            process = subprocess.Popen('pbcopy', env={'LANG': 'en_US.UTF-8'}, stdin=subprocess.PIPE)
+            process.communicate(content.encode('utf-8'))
+            return process.returncode == 0
+        elif sys.platform.startswith('win'):
+            # Windows 10+ ships with the 'clip' utility
+            process = subprocess.Popen('clip', stdin=subprocess.PIPE, shell=True)
+            # clip expects UTF-16LE encoding
+            process.communicate(content.encode('utf-16le'))
+            return process.returncode == 0
+        else:
+            print("Clipboard copy is only supported on macOS and Windows 10+.")
+            return False
     except Exception as e:
         print(f"Error copying to clipboard: {e}")
         return False
